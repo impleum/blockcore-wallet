@@ -1,14 +1,11 @@
 /* Source based on example by Brady Joslin - https://github.com/bradyjoslin */
 import { Base64 } from 'js-base64';
 import { payments } from '@blockcore/blockcore-js';
-import { BlockcoreIdentity, BlockcoreIdentityTools } from '@blockcore/identity';
-import * as bs58 from 'bs58';
-import { Secp256k1KeyPair } from '@transmute/did-key-secp256k1';
-import { CryptoService } from './crypto.service';
 import * as secp from '@noble/secp256k1';
-import { createJWT, ES256KSigner } from 'did-jwt';
+import { ES256KSigner } from 'did-jwt';
 import { HDKey } from '@scure/bip32';
 import { Network } from '../../shared/networks';
+import { bech32 } from '@scure/base';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -16,20 +13,6 @@ const dec = new TextDecoder();
 export class CryptoUtility {
   // constructor(private cryptoService: CryptoService) {}
   constructor() {}
-
-  getProfileNetwork() {
-    var tools = new BlockcoreIdentityTools();
-    return tools.getProfileNetwork();
-  }
-
-  getAddress(node: any) {
-    const { address } = payments.p2pkh({
-      pubkey: node.publicKey,
-      network: this.getProfileNetwork(),
-    });
-
-    return address;
-  }
 
   getAddressByNetwork(publicKey: Buffer, network: Network, addressPurpose: number) {
     if (addressPurpose == 44) {
@@ -55,11 +38,28 @@ export class CryptoUtility {
       });
 
       return address;
+    // } else if (addressPurpose == 19) {
+    //   return this.convertToBech32(publicKey, network.bech32);
     } else if (addressPurpose == 340) {
       return this.getIdentifier(publicKey);
     }
 
     throw Error(`The address purpose ${addressPurpose} is currently not supported.`);
+  }
+
+  convertToBech32(key: Uint8Array, prefix: string) {
+    const keyValue = this.ensureSchnorrPublicKey(key);
+    const words = bech32.toWords(keyValue);
+    const value = bech32.encode(prefix, words);
+
+    return value;
+  }
+
+  convertFromBech32(address: string) {
+    const decoded = bech32.decode(address);
+    const key = bech32.fromWords(decoded.words);
+
+    return key;
   }
 
   getIdentifier(publicKey: Uint8Array) {
@@ -79,8 +79,25 @@ export class CryptoUtility {
     return schnorrPublicKey;
   }
 
+  ensureSchnorrPublicKey(publicKey: Uint8Array) {
+    if (publicKey.length == 33) {
+      return publicKey.slice(1);
+    }
+
+    return publicKey;
+  }
+
+  /** DEPRECATED: Use arrayToHex. */
   schnorrPublicKeyToHex(publicKey: Uint8Array) {
     return secp.utils.bytesToHex(publicKey);
+  }
+
+  arrayToHex(value: Uint8Array) {
+    return secp.utils.bytesToHex(value);
+  }
+
+  hexToArray(value: string) {
+    return secp.utils.hexToBytes(value);
   }
 
   getAddressByNetworkp2wsh(node: any, network: any) {
@@ -119,10 +136,10 @@ export class CryptoUtility {
     return address;
   }
 
-  getIdentity(keyPair: Secp256k1KeyPair) {
-    var identity = new BlockcoreIdentity(keyPair.toKeyPair(false));
-    return identity;
-  }
+  // getIdentity(keyPair: Secp256k1KeyPair) {
+  //   var identity = new BlockcoreIdentity(keyPair.toKeyPair(false));
+  //   return identity;
+  // }
 
   getPasswordKey(password: string) {
     return window.crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);

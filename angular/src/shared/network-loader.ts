@@ -78,10 +78,10 @@ export class NetworkLoader {
       const serverStatuses = this.store.get(networkType);
       // console.log(serverStatuses);
 
-      if (!serverStatuses && this.getNetwork(networkType).type != 'identity') {
+      if (!serverStatuses) {
         existingState.domain = '';
         existingState.url = '';
-        console.warn(`No indexers for ${networkType} available. Returning empty URL!`);
+        // console.warn(`No indexers for ${networkType} available. Returning empty URL!`);
         return null;
         // console.log('NO STATUSES!!! - get URL from list of servers:');
         // const serverIndex = this.generateRandomNumber(0, servers.length - 1);
@@ -91,7 +91,7 @@ export class NetworkLoader {
         const availableServers = serverStatuses.filter((s) => s.availability === IndexerApiStatus.Online);
 
         if (availableServers.length == 0) {
-          console.warn(`No indexers for ${networkType} is online. Returning empty URL!`);
+          // console.warn(`No indexers for ${networkType} is online. Returning empty URL!`);
           existingState.domain = '';
           existingState.url = '';
           return null;

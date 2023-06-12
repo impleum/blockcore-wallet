@@ -35,18 +35,14 @@
   },
   "Dashboard": {
     "Accounts": "Kontoer",
-    "Actions": "Handlinger",
     "Vaults": "Hvelv",
     "Collectibles": "Samleobjekter",
     "Inbox": "Innboks",
-    "Tools": "Verktøy",
     "AddressBook": "Adressebok",
     "AddAccount": "Opprett konto",
     "AddWallet": "Opprett lommebok",
     "Exchange": "Exchange (kjøp/selg)",
     "ScanPayment": "Skann betaling",
-    "CreateAccount": "Opprett konto",
-    "CreateWallet": "Opprett lommebok",
     "NoCollectablesFound": "Ingen samleobjekter funnet",
     "GoToMarketplace": "Gå til markedsplassen",
     "ZeroAccounts": "Lommeboken din har null kontoer."
@@ -283,7 +279,7 @@
     "InteractionWithContract": "Samspill med kontrakt",
     "StandardTokensNotice": "Merk: Token API støtter ikke desimaler i gjeldende utgivelse. Verdier vises uten desimaler i denne versjonen.",
     "Login": "Logg Inn",
-    "PasteTheLoginUrl": "Lim inn påloggings-url",
+    "PasteTheLoginURL": "Lim inn påloggings-URL",
     "WalletsPersistedState": "Lommebøker vedvarte tilstand",
     "WalletsPersistedStateMessage": "Inneholder din krypterte hemmelige gjenopprettingsfrase. IKKE del dette med noen!",
     "NetworkStatus": "Nettverksstatus",
@@ -315,7 +311,7 @@
     "Available": "Tilgjengelig",
     "ClickToFillOutMaximum": "Klikk for å fylle ut maksimum (minus gebyr)",
     "PrivateMemo": "Privat notat",
-    "CustomChangeAddress": "Egendefinert endre adresse",
+    "CustomChangeAddress": "Egendefinert vekslepenge adresse",
     "MinimumFeeRate": "Minste gebyrsats",
     "SatByte": "sat/byte",
     "NotAllowedToReadClipboard": "Ikke tillatt å lese utklippstavlen.",
@@ -348,7 +344,6 @@
     "SelectSidechain": "Velg en sidekjede",
     "FederationSwapAddress": "Føderasjonsbytteadresse",
     "SidechainAddress": "Sidekjedeadresses",
-    "SwapCardMessage": "Ekstra kjedebyttegebyr tas fra beløpet som er lagt inn, som er et fast beløp på '0,001'. Hvis du vil at mottakeren skal få '1', skriv inn beløpet '1.001'.",
     "SwapAmountMin": "Beløpet må være mer enn 1.",
     "FederationAddress": "Forbundsadresse",
     "TargetAddressOn": "Måladresse på",
@@ -399,7 +394,7 @@
     "AuthorizeOnce": "Godkjenn én gang",
     "AuthorizeFor5Minutes": "Godkjenn i 5 minutter",
     "AuthorizeForever": "Autoriser for alltid",
-    "Cancel":"Cancel"
+    "Cancel": "Cancel"
   },
   "Manifest": {
     "Description": "Ikke-forvaringspliktig lommebok for mynter, tokens, identiteter, NFTer og mer."
@@ -420,6 +415,17 @@
     "ExchangeSTRAXForBTC": "Exchange STRAX for BTC with Exolix",
     "Partners": "Partners",
     "PartnersDescription": "Using our links and affiliated partners, helps support the continued development of this wallet."
+  },
+  "SignVerify": {
+    "MessageToSign": "Message to sign",
+    "Signature": "Signature",
+    "Sign": "Sign",
+    "SignatureVerified": "Signature verified",
+    "SignatureVerifiedDescription": "This means that the message has been verified to be signed by the owner of the address/identity specified.",
+    "Verify": "Verify",
+    "FailedSignatureVerification": "Failed signature verification",
+    "FailedSignatureVerificationDescription": "This means that the message was not signed by the owner of the address/identity specified.",
+    "ClearAll": "Clear All"
   },
   "english": "English",
   "chinese_simplified": "Chinese (Simplified)",

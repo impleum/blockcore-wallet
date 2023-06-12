@@ -2,14 +2,17 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon class="example-tab-icon">person</mat-icon>&nbsp;
-      <span>{{ "Account.Identity" | translate }}</span>
+      <span *ngIf="(uiState.displayLabels$ | async) === false">{{ "Account.Identity" | translate }}</span>
     </ng-template>
 
-    <div class="page">
+    <div *ngIf="isDid" class="page">
       <h2>
         {{ readableId }}
         <button class="copy-button" mat-icon-button (click)="copy()">
           <mat-icon>content_copy</mat-icon>
+        </button>
+        <button class="copy-button" mat-icon-button (click)="openDid()">
+          <mat-icon>travel_explore</mat-icon>
         </button>
       </h2>
 
@@ -18,8 +21,9 @@
     </button></h3> -->
       <!-- <h4>{{walletManager.activeAccount.did}}</h4> -->
 
-      <p class="icon-indicator" *ngIf="!identity?.published"><mat-icon class="icon-warn">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyNOTPublic" | translate }}</p>
-      <p class="icon-indicator" *ngIf="identity?.published"><mat-icon class="icon-success">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyPublic" | translate }}</p>
+      <p class="icon-indicator" *ngIf="published === undefined"><mat-icon class="icon-warn">loop</mat-icon>Loading...</p>
+      <p class="icon-indicator" *ngIf="published === false"><mat-icon class="icon-warn">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyNOTPublic" | translate }}</p>
+      <p class="icon-indicator" *ngIf="published === true"><mat-icon class="icon-success">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyPublic" | translate }}</p>
 
       <!-- <mat-form-field class="input-full-width" appearance="outline">
         <mat-label>Verifiable Data Registry URL</mat-label>
@@ -60,15 +64,94 @@
       </p>
 
       <br /><br />
+
       <p>
-        <button class="signup-button" mat-stroked-button (click)="copyDIDDocument()">{{ "Account.CopyDIDDocument" | translate }}</button>
-
-        <button class="signup-button" mat-stroked-button (click)="copyDWNRequest()">Copy DWN Write Request</button>
-
-        <button class="signup-button" mat-stroked-button (click)="copyDWNQueryRequest()">Copy DWN Query Request</button>
-
-        <button class="signup-button" mat-stroked-button (click)="copyVaultConfiguration()">{{ "Account.CopyBlockcoreVaultSetupConfiguration" | translate }}</button>
+        <button class="signup-button" [disabled]="published === true" mat-flat-button color="warn" (click)="publish()">{{ "Account.Publish" | translate }}</button>
       </p>
+
+      <!-- <p>
+                Your identity is primarily a list of public keys that you make public available for others to connect with you
+                in a secure manner.</p>
+            <p>You can use your identity to login to web apps, to chat with others, to sign contracts and documents, to
+                establish digital agreements and a lot more.</p> -->
+
+      <!-- <h3>DID Document:</h3>
+            <textarea class="diddocument">{{identity.didDocument | json}}</textarea> -->
+    </div>
+
+    <div *ngIf="!isDid" class="page centered wrap">
+      <h2>Nostr Public Key</h2>
+
+      <p class="selectable">
+        {{ identifier }}
+        <button class="copy-button" mat-icon-button (click)="copy()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <!-- <button class="copy-button" mat-icon-button (click)="openDid()">
+          <mat-icon>travel_explore</mat-icon>
+        </button> -->
+      </p>
+
+      <p>
+        <img [src]="qrCodePublicKey" class="qr-code" />
+      </p>
+      <div class="dimmed">nostr:{{ identifier }}</div>
+
+      <!-- <h3 class="break">{{identifier}} <button class="copy-button" mat-icon-button (click)="copy()">
+        <mat-icon>content_copy</mat-icon>
+    </button></h3> -->
+      <!-- <h4>{{walletManager.activeAccount.did}}</h4> -->
+
+      <!-- <p class="icon-indicator" *ngIf="published === undefined"><mat-icon class="icon-warn">loop</mat-icon>Loading...</p>
+      <p class="icon-indicator" *ngIf="published === false"><mat-icon class="icon-warn">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyNOTPublic" | translate }}</p>
+      <p class="icon-indicator" *ngIf="published === true"><mat-icon class="icon-success">done</mat-icon>{{ "Account.ThisIdentityIsCurrentlyPublic" | translate }}</p> -->
+
+      <!-- <mat-form-field class="input-full-width" appearance="outline">
+        <mat-label>Verifiable Data Registry URL</mat-label>
+        <input matInput [(ngModel)]="verifiableDataRegistryUrl" />
+        <mat-hint
+          >Set a custom VDR URL if you self-host your own instance of Blockcore
+          Vault.</mat-hint
+        >
+      </mat-form-field>
+
+      <br /><br />
+      IMPORTANT NOTE ON PRIVACY
+      <br />
+      The DID Document should never contain personal identifiable information.
+      Never put your e-mail address or name of any kind into the URL above.
+      <br /><br />
+      <p>
+        <button
+          class="signup-button"
+          mat-flat-button
+          color="primary"
+          (click)="save()"
+        >
+          Save (locally)
+        </button>
+        <button
+          class="signup-button"
+          mat-flat-button
+          color="warn"
+          (click)="publish()"
+        >
+          Publish
+        </button>
+      </p> -->
+
+      <p *ngIf="identity?.published">
+        <a [href]="identityUrl" target="_blank">{{ "Account.ViewIdentityOnServer" | translate }}</a>
+      </p>
+
+      <br /><br />
+
+      <!--
+      <p>
+        <button class="signup-button" [disabled]="published === true" mat-flat-button color="warn" (click)="publish()">{{ "Account.Publish" | translate }}</button>
+      </p>
+      -->
+
       <!-- <p>
                 Your identity is primarily a list of public keys that you make public available for others to connect with you
                 in a secure manner.</p>
@@ -83,13 +166,10 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon class="example-tab-icon">contact_mail</mat-icon>&nbsp;
-      <span>{{ "Account.Profile" | translate }}</span>
+      <span *ngIf="(uiState.displayLabels$ | async) === false">{{ "Account.Profile" | translate }}</span>
     </ng-template>
 
-    <div class="page">
-      <!-- <h2>Profile:</h2> -->
-      <!-- <h4>{{identity.id}}</h4> -->
-
+    <div *ngIf="isDid" class="page">
       <p class="icon-indicator" *ngIf="!identity?.published"><mat-icon class="icon-warn">done</mat-icon> {{ "Account.ThisProfileIsCurrentlyNOTPublic" | translate }}</p>
       <p class="icon-indicator" *ngIf="identity?.published"><mat-icon class="icon-success">done</mat-icon> {{ "Account.ThisProfileIsCurrentlyPublic" | translate }}</p>
 
@@ -118,7 +198,7 @@
       <p>If you publish your profile to an Blockcore Vault, the profile will be public available.</p>
       <p>To increase your privacy, only perform manual copy and sharing of your profile to friends and connections.</p>
 
-      <br /><br />
+      <!-- <br /><br />
       <p>
         <button class="signup-button" mat-flat-button color="primary" (click)="save()">{{ "Account.SaveLocally" | translate }}</button>
         <button class="signup-button" mat-flat-button color="warn" (click)="publish()">{{ "Account.Publish" | translate }}</button>
@@ -131,7 +211,7 @@
       <br /><br />
       <p>
         <button class="signup-button" mat-stroked-button (click)="copyProfileDocument()">{{ "Account.CopyProfileDocument" | translate }}</button>
-      </p>
+      </p> -->
       <!-- <p>
                 Your identity is primarily a list of public keys that you make public available for others to connect with you
                 in a secure manner.</p>
@@ -140,6 +220,105 @@
 
       <!-- <h3>DID Document:</h3>
             <textarea class="diddocument">{{identity.didDocument | json}}</textarea> -->
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon class="example-tab-icon">inventory_2</mat-icon>&nbsp;
+      <span *ngIf="(uiState.displayLabels$ | async) === false">{{ "Account.Data" | translate }}</span>
+    </ng-template>
+
+    <div *ngIf="isDid" class="page">
+      Coming soon.
+    </div>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon class="example-tab-icon">handyman</mat-icon>&nbsp;
+      <span *ngIf="(uiState.displayLabels$ | async) === false">Tools</span>
+    </ng-template>
+
+    <div *ngIf="isDid" class="page">
+      <p>
+        <button class="signup-button" mat-stroked-button (click)="copyDIDDocument()">{{ "Account.CopyDIDDocument" | translate }}</button>
+
+        <br /><br />
+        <mat-card>
+          <mat-form-field class="input-full-width" appearance="outline">
+            <mat-label>Domain</mat-label>
+            <input matInput [(ngModel)]="wellKnownDomain" />
+          </mat-form-field>
+
+          <button class="signup-button" mat-stroked-button (click)="copyWellKnownConfiguration()">Copy .well-known configuration</button>
+        </mat-card>
+
+        <br /><br />
+
+        <button class="signup-button" mat-stroked-button (click)="copyDWNRequest()">Copy DWN Write Request</button>
+
+        <button class="signup-button" mat-stroked-button (click)="copyDWNQueryRequest()">Copy DWN Query Request</button>
+
+        <button class="signup-button" mat-stroked-button (click)="copyVaultConfiguration()">{{ "Account.CopyBlockcoreVaultSetupConfiguration" | translate }}</button>
+      </p>
+    </div>
+
+    <div *ngIf="!isDid" class="page">
+      <p>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Export Private Key</mat-card-title>
+            <mat-card-subtitle>Keep this private key safe, if you loose it or share it with websites, it can be stolen and misused.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <button class="signup-button" mat-stroked-button (click)="exportPrivateKey()">{{ "Account.ExportPrivateKey" | translate }}</button>
+            <mat-card class="mat-elevation-z6 selectable wrap" *ngIf="verifiedWalletPassword === true"
+              >{{ privateKey
+              }}<button class="copy-button" mat-icon-button (click)="copyPrivateKey()">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+
+              <p>
+                <img [src]="qrCodePrivateKey" class="qr-code" />
+              </p>
+              <div class="dimmed">nostr:{{ privateKey }}</div>
+            </mat-card>
+            <mat-card *ngIf="verifiedWalletPassword === false">Invalid Password</mat-card>
+            <br />
+            <button *ngIf="verifiedWalletPassword === true" class="signup-button" mat-flat-button color="warn" (click)="resetPrivateKey()">{{ "App.Hide" | translate }}</button>
+          </mat-card-content>
+        </mat-card>
+      </p>
+
+      <p>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Key Conversion</mat-card-title>
+            <mat-card-subtitle>Convert between any Nostr key format (e.g. npub to hex)</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field class="input-full-width" appearance="outline">
+              <mat-label>Key (any type of Nostr key)</mat-label>
+              <input matInput (change)="convertKey()" [(ngModel)]="conversionKey" />
+            </mat-form-field>
+
+            <mat-radio-group (change)="convertKey()" [(ngModel)]="conversionKeyType" *ngIf="showConversionOptions">
+              <mat-radio-button value="npub">Public Key</mat-radio-button>&nbsp;
+              <mat-radio-button value="nsec">Private Key</mat-radio-button>
+            </mat-radio-group>
+            <br><br>
+
+            <mat-card class="mat-elevation-z6 selectable wrap" *ngIf="convertedKey"
+              >{{ convertedKey
+              }}<button class="copy-button" mat-icon-button (click)="copyConvertedKey()">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </mat-card>
+            <mat-card *ngIf="invalidConversion">Invalid input, unable to convert</mat-card>
+          </mat-card-content>
+        </mat-card>
+      </p>
     </div>
   </mat-tab>
 

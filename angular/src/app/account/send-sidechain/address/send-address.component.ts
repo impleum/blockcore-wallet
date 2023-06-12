@@ -2,10 +2,11 @@ import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import Big from 'big.js';
 import { InputValidators } from 'src/app/services/inputvalidators';
-import { WalletManager, UIState, SendSidechainService, SendService, NetworkStatusService } from '../../../services';
+import { WalletManager, UIState, SendSidechainService, SendService, NetworkStatusService, SettingsService } from '../../../services';
 import { MatDialog } from '@angular/material/dialog';
 import { AddressValidationService } from 'src/app/services/address-validation.service';
 import { QrScanDialog } from '../../send/address/qr-scanning.component';
+import { Settings } from 'src/shared';
 
 @Component({
   selector: 'app-account-send-address',
@@ -16,6 +17,7 @@ export class AccountSendSidechainAddressComponent implements OnInit, OnDestroy {
   form: UntypedFormGroup;
   optionsOpen = false;
   amountTooLarge = false;
+  settings : Settings;
 
   get optionAmountInput() {
     return this.form.get('amountInput') as UntypedFormControl;
@@ -36,18 +38,47 @@ export class AccountSendSidechainAddressComponent implements OnInit, OnDestroy {
     private addressValidation: AddressValidationService,
     private ngZone: NgZone,
     public dialog: MatDialog,
-    private fb: UntypedFormBuilder
+    private fb: UntypedFormBuilder,
+    private settingsService : SettingsService,
   ) {
-    this.form = fb.group({
+    this.settings = settingsService.values;
+  }
+
+  ngOnDestroy() {}
+
+  async ngOnInit() {
+    // Constructor of send.component.ts should have called resetFee() by now, which sets
+    // the fee to network definition. Here we will attempt to get it from blockchain API.
+    const networkStatus = this.networkStatusService.get(this.sendService.network.id);
+
+    // Grab the fee rate either from network definition or from blockchain API status:
+    if (networkStatus.length > 0) {
+      this.sendService.targetFeeRate = networkStatus[0].relayFee;
+    }
+
+    this.form = this.fb.group({
       // addressInput: new UntypedFormControl('', [Validators.required, Validators.minLength(6), InputValidators.address(this.sendService, this.addressValidation)]),
       changeAddressInput: new UntypedFormControl('', [InputValidators.address(this.sendService, this.addressValidation)]),
-      amountInput: new UntypedFormControl('', [Validators.required, Validators.min(1), Validators.pattern(/^-?(0|[0-9]+[.]?[0-9]*)?$/), InputValidators.maximumBitcoin(sendService)]),
+      amountInput: new UntypedFormControl('', [Validators.required, Validators.min(1), Validators.pattern(/^-?(0|[0-9]+[.]?[0-9]*)?$/), InputValidators.maximumBitcoin(this.sendService)]),
       // TODO: Make an custom validator that sets form error when fee input is too low.
-      feeInput: new UntypedFormControl(this.sendService.getNetworkFee(), [Validators.required, Validators.min(0), Validators.pattern(/^-?(0|[0-9]+[.]?[0-9]*)?$/)]),
+      feeInput: new UntypedFormControl(this.sendService.targetFeeRate, [Validators.required, Validators.min(this.sendService.targetFeeRate), Validators.pattern(/^-?(0|[0-9]+[.]?[0-9]*)?$/)]),
+      sidechainFee: new UntypedFormControl ('true'),
 
       // TODO: validate the sidechain target address using the sidechain network
       sidechainAddressInput: new UntypedFormControl('', [InputValidators.addressSidechain(this.sendSidechainService, this.addressValidation)]),
     });
+
+    if (this.settings.requirePassword) {
+      this.form.addControl(
+        'walletPasswordInput', new UntypedFormControl('', {
+          validators: [Validators.required],
+          asyncValidators: [InputValidators.walletPassword(this.walletManager)],
+          updateOn: 'blur',
+        }),
+      );
+    }
+
+
 
     if (this.sendService.amount == '0') {
       this.sendService.amount = '1';
@@ -79,18 +110,6 @@ export class AccountSendSidechainAddressComponent implements OnInit, OnDestroy {
       }
     });
 
-    const networkStatus = this.networkStatusService.get(this.sendService.network.id);
-
-    if (networkStatus.length == 0) {
-      this.sendService.feeRate = this.sendService.network.feeRate;
-    } else {
-      this.sendService.feeRate = networkStatus[0].relayFee;
-    }
-  }
-
-  ngOnDestroy() {}
-
-  async ngOnInit() {
     // Select the first defined sidechain and trigger the changed event:
     this.sendSidechainService.selectedSidechain = this.sendService.network.sidechains[0].symbol;
     await this.onSidechainSelectChanged({ value: this.sendService.network.sidechains[0].symbol });

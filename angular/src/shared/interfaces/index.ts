@@ -60,6 +60,26 @@ interface NetworkStatus {
   relayFee: number;
 }
 
+interface CoinSelectionResult {
+  fee: number;
+  inputs: CoinSelectionInput[];
+  outputs: CoinSelectionOutput[];
+}
+
+interface CoinSelectionInput {
+  address: string;
+  nonWitnessUtxo?: Buffer;
+  txId: string;
+  value: number;
+  vout: number;
+}
+
+interface CoinSelectionOutput {
+  address: string;
+  value: number;
+  script: any;
+}
+
 interface NetworkStatusEntry {
   type: string;
   selectedDomain: string;
@@ -96,6 +116,9 @@ interface Account {
 
   /** Extended Public Key for this account. */
   xpub?: string;
+
+  /** Imported private key for this account. */
+  prv?: string;
 
   /** When the account is created, the DID is generated and never changes. */
   // did?: string;
@@ -401,6 +424,7 @@ interface Settings {
   themeColor: string;
   language: string;
   dir: string;
+  requirePassword: boolean;
   /** Allows users to change how the amounts are displayed. */
   amountFormat: string;
 }
@@ -427,6 +451,11 @@ interface Action {
 //   level: number;
 //   condition: string;
 // }
+
+interface PermissionExecution {
+  key: string;
+  executions: number;
+}
 
 interface PermissionDomain {
   app: string;
@@ -552,6 +581,7 @@ export interface Token {
   totalSupply: number;
   address: string;
   amount: number;
+  decimals: number;
 }
 
 export interface AccountTokens {
@@ -570,26 +600,77 @@ interface ActionRequest {
 
 interface ActionResponse {
   /** The original request for this response. */
-  request: ActionRequest;
+  request?: ActionRequest;
 
   /** The public key user picked for the action. */
   key?: string;
 
   /** The signature for the signed content in base64 encoding. */
-  signature?: string;
+  // signature?: string;
 
-  /** A copy of the actual content string that was signed. */
-  content?: object | string;
+  /** OBSOLETE (use response instead): A copy of the actual content string that was signed. */
+  // content?: object | string;
+
+  /** The response from the action. */
+  response?: object | string;
 
   error?: unknown | any | { message?: string; stack?: any };
 
   /** The unique identifier of the network user selected. */
   network?: string;
+
+  /** The wallet identifier. */
+  walletId?: string;
+
+  /** The account identifier. */
+  accountId?: string;
+
+  /** Notification to display in the DOM upon key usage. */
+  notification?: string;
 }
 
 interface ActionPrepareResult {
+  /** The prepared result from the handler, this can be used in the UI. */
   content: object | string;
+
+  /** Indicates if this handler requires the user consent to execute. */
+  consent: boolean;
 }
+
+interface AccountFilter {
+  /** The types of accounts to display. */
+  types?: string[];
+
+  /** The symbol of accounts to display. */
+  symbol?: string[];
+}
+
+interface DIDRequestOptions {
+  /** a challenge to prove DID control */
+  challenge: String;
+
+  /** a list of accepted DID methods */
+  methods?: String[];
+
+  /** client's reason for requesting a DID. Will be displayed to wallet controller */
+  reason?: String;
+};
+
+interface DIDRequestResponse {
+  /** the wallet owner's selected DID */
+  did: String;
+
+  /** proof of control for selected DID */
+  proof: String;
+};
+
+interface VCRequestResponse {
+  /** the wallet owner's selected DID */
+  did: String;
+
+  /** The verifiable credential */
+  vc: String;
+};
 
 interface ActionMessage {
   /** The type of action, this is currently limited to `request` */
@@ -600,6 +681,9 @@ interface ActionMessage {
 
   /** The response returned from action handler. */
   response?: ActionResponse;
+
+  /** Additional data from the prompt. */
+  promptResponse?: any;
 
   target: string;
   source: string;
@@ -749,4 +833,12 @@ export {
   StateEntry,
   TransactionMetadata,
   TransactionMetadataEntry,
+  CoinSelectionResult,
+  CoinSelectionInput,
+  CoinSelectionOutput,
+  DIDRequestOptions,
+  DIDRequestResponse,
+  AccountFilter,
+  VCRequestResponse,
+  PermissionExecution
 };

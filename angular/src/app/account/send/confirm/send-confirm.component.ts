@@ -1,5 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import Big from 'big.js';
+import { Account, AccountUnspentTransactionOutput } from 'src/shared';
 import { SendService, WalletManager } from '../../../services';
+import { payments, Psbt } from '@blockcore/blockcore-js';
+import { UnspentOutputService } from 'src/app/services/unspent-output.service';
 
 @Component({
   selector: 'app-account-send-confirm',
@@ -11,11 +15,10 @@ export class AccountSendConfirmComponent implements OnInit, OnDestroy {
   transaction: any;
   error: string;
   detailsOpen = false;
-  invalidFeeAmount = false;
   loading = true;
   valid = false;
 
-  constructor(public sendService: SendService, public walletManager: WalletManager) {}
+  constructor(public sendService: SendService, public walletManager: WalletManager, private unspentService: UnspentOutputService) {}
 
   ngOnDestroy() {}
 
@@ -65,29 +68,18 @@ export class AccountSendConfirmComponent implements OnInit, OnDestroy {
         data = dec.decode(sliced);
       }
 
-      const tx = await this.walletManager.createTransaction(
-        this.walletManager.activeWallet,
-        this.walletManager.activeAccount,
-        this.sendService.address,
-        this.sendService.changeAddress,
-        this.sendService.amountAsSatoshi,
-        this.sendService.feeAsSatoshi,
-        this.sendService.accountHistory.unspent,
-        data
-      );
+      const tx = await this.sendService.generateTransaction(this.unspentService, this.walletManager, this.walletManager.activeAccount, data);
+
+      // Calculate and set the total, take it from the outputs wince the generat transaction
+      // can potentially have changed the output value (if sending max for example).
+      this.sendService.actualAmountAsSatoshi = Big(tx.transaction.txOutputs[0].value);
+      this.sendService.total = this.sendService.actualAmountAsSatoshi.add(tx.fee);
 
       this.transaction = tx;
       this.sendService.transactionHex = tx.transactionHex;
       this.sendService.addresses = tx.addresses;
-      this.invalidFeeAmount = this.transaction.feeRate < this.sendService.feeRate;
 
-      // TODO: Add aditional conditions here if needed for validating the transaction before allowing
-      // it to be broadcasted. Perhaps checking the network status?
-      if (this.invalidFeeAmount) {
-        this.valid = false;
-      } else {
-        this.valid = true;
-      }
+      this.valid = true;
     } catch (err: any) {
       console.error(err);
       this.error = err.message;

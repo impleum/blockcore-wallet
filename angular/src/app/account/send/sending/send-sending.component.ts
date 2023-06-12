@@ -34,88 +34,11 @@ export class AccountSendSendingComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.sendService.loading = true;
 
-    const transactionDetails = await this.walletManager.sendTransaction(this.sendService.account, this.sendService.transactionHex);
+    // If the user have gone back and trying again, make sure to reset the error.
+    this.sendService.resetError();
 
-    this.sendService.loading = false;
-    this.sendService.transactionResult = transactionDetails.transactionResult;
-
-    if (typeof transactionDetails.transactionResult !== 'string') {
-      this.sendService.transactionError = this.sendService.transactionResult.title;
-
-      // Examples:
-      // {"title":"bad-txns-inputs-missingorspent","status":200,"traceId":"00-6cae22bb805a8698ffe313f5130f040c-ddbb8afdb391e115-00"}
-      // {"title":"tx-size","status":200,"traceId":"00-859d81fbef41ef9f7832aeaf0f88615b-75998b079a941280-00"}
-    } else {
-      this.sendService.transactionId = this.sendService.transactionResult;
-
-      // When the transaction is successfull, we'll store the metadata for it.
-      let txMetadata = this.transactionMetadataStore.get(this.sendService.account.identifier);
-
-      if (!txMetadata) {
-        txMetadata = {
-          accountId: this.sendService.account.identifier,
-          transactions: [],
-        };
-
-        this.transactionMetadataStore.set(txMetadata.accountId, txMetadata);
-      }
-
-      let metadataEntry = txMetadata.transactions.find((t) => t.transactionHash == this.sendService.transactionId);
-
-      if (metadataEntry) {
-        // This should never happen?
-      } else {
-        metadataEntry = {
-          transactionHash: this.sendService.transactionId,
-          memo: this.sendService.memo,
-          payment: this.sendService.payment?.options,
-        };
-
-        txMetadata.transactions.push(metadataEntry);
-        await this.transactionMetadataStore.save();
-      }
-
-      // this.transactionMetadataStore.set()
-    }
-
-    this.sendService.transactionHex = transactionDetails.transactionHex;
-
-    // After we send the transaction, we will persist the account history store because the spent
-    // utxos have been marked in the createTransaction method.
-    await this.accountHistoryStore.save();
-
-    // Reload the watch store to ensure we have latest state, the watcher might have updated (and removed) some values.
-    await this.addressWatchStore.load();
-
-    await this.accountStateStore.load();
-
-    const accountState = this.accountStateStore.get(this.sendService.account.identifier);
-
-    for (let i = 0; i < this.sendService.addresses.length; i++) {
-      const address = this.sendService.addresses[i];
-
-      let index = accountState.receive.findIndex((a) => a.address == address);
-
-      if (index === -1) {
-        index = accountState.change.findIndex((a) => a.address == address);
-      }
-
-      // If we cannot find the address that is involved with this transaction, don't add a watch.
-      if (index > -1) {
-        this.addressWatchStore.set(address, {
-          address,
-          accountId: this.sendService.account.identifier,
-          count: 0,
-        });
-      }
-    }
-
-    // Save the watch store so the background watcher will see the new entries.
-    await this.addressWatchStore.save();
-
-    // Trigger watch process to start immediately now that we've broadcasted a new transaction.
-    this.message.send(this.message.createMessage('watch', {}, 'background'));
-
+    await this.sendService.broadcastTransaction(this.walletManager, this.transactionMetadataStore, this.accountHistoryStore, this.accountStateStore, this.addressWatchStore, this.message);
+ 
     // TODO: Parse the transaction locally and update the local UI state to match the future state of the indexer, ensuring
     // a good user experience where the transaction is displayed in the history immediately. This requires updating multiple
     // stores.

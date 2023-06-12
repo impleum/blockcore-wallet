@@ -1,3 +1,314 @@
+## <small>1.0.28 (2023-03-13)</small>
+
+* Add a basic call to get DWN data ([3772652](https://github.com/block-core/blockcore-wallet/commit/3772652))
+* Attempt to fix issue with error persisting across attempts ([1c02513](https://github.com/block-core/blockcore-wallet/commit/1c02513))
+* Update dependencies and fix SegWit sending ([7174fea](https://github.com/block-core/blockcore-wallet/commit/7174fea))
+* Update version and changelog ([fbd9f69](https://github.com/block-core/blockcore-wallet/commit/fbd9f69))
+* Upgrade some packages, including DWN ([6a5c0d6](https://github.com/block-core/blockcore-wallet/commit/6a5c0d6))
+
+
+
+## <small>1.0.27 (2023-02-23)</small>
+
+* Add atomic swaps handlers (#321) ([2a8eeb3](https://github.com/block-core/blockcore-wallet/commit/2a8eeb3)), closes [#321](https://github.com/block-core/blockcore-wallet/issues/321)
+* Fix issue with crash when decoding OP_RETURN ([61d451d](https://github.com/block-core/blockcore-wallet/commit/61d451d))
+* Made scrollbar better :з (#330) ([21adac7](https://github.com/block-core/blockcore-wallet/commit/21adac7)), closes [#330](https://github.com/block-core/blockcore-wallet/issues/330)
+* Move identity selection to top ([74f484f](https://github.com/block-core/blockcore-wallet/commit/74f484f))
+* Update version and changelog ([73b9cf2](https://github.com/block-core/blockcore-wallet/commit/73b9cf2))
+
+
+
+## <small>1.0.26 (2023-01-20)</small>
+
+* Fix issue with decryption of nostr events ([787310b](https://github.com/block-core/blockcore-wallet/commit/787310b))
+* Fix the issue with encryption not using correct public key ([d397e38](https://github.com/block-core/blockcore-wallet/commit/d397e38))
+* Update version and changelog ([a9c842d](https://github.com/block-core/blockcore-wallet/commit/a9c842d))
+
+
+
+## <small>1.0.25 (2023-01-20)</small>
+
+* Add ability for wallet to auto-open when wallet has been locked ([5e5cf75](https://github.com/block-core/blockcore-wallet/commit/5e5cf75))
+* Avoid logging no indexers available ([6b6ab4c](https://github.com/block-core/blockcore-wallet/commit/6b6ab4c))
+* Update lists ([fcf9310](https://github.com/block-core/blockcore-wallet/commit/fcf9310))
+* Update version and changelog ([6671a0f](https://github.com/block-core/blockcore-wallet/commit/6671a0f))
+* Fix: typos (#326) ([d1101f2](https://github.com/block-core/blockcore-wallet/commit/d1101f2)), closes [#326](https://github.com/block-core/blockcore-wallet/issues/326)
+
+
+
+## <small>1.0.24 (2023-01-10)</small>
+
+* Add ability to issue custom payments from the provider API ([97647da](https://github.com/block-core/blockcore-wallet/commit/97647da))
+* Add support for Web App Launch Handling in PWA-mode ([ed0241a](https://github.com/block-core/blockcore-wallet/commit/ed0241a))
+* Change binding of third party licenses to not use HTML binding ([413bd55](https://github.com/block-core/blockcore-wallet/commit/413bd55))
+* Don't show confirmation dialog when user cancels ([1b55ccc](https://github.com/block-core/blockcore-wallet/commit/1b55ccc))
+* Improve add account layout and move type to first option. Add Bitcoin icon. ([513bff3](https://github.com/block-core/blockcore-wallet/commit/513bff3))
+* Limit length of hint to 64 characters ([17bd0b4](https://github.com/block-core/blockcore-wallet/commit/17bd0b4))
+* Migrate generateTransaction into the SendService ([5b6cc4c](https://github.com/block-core/blockcore-wallet/commit/5b6cc4c))
+* Update version and changelog ([441f18d](https://github.com/block-core/blockcore-wallet/commit/441f18d))
+* WIP: Add the transaction.send action ([0ac76ab](https://github.com/block-core/blockcore-wallet/commit/0ac76ab))
+
+
+
+## <small>1.0.23 (2023-01-03)</small>
+
+* Fix bug with encrypt and decrypt on nostr provider ([d220d26](https://github.com/block-core/blockcore-wallet/commit/d220d26))
+* Update version and changelog ([32f5d3c](https://github.com/block-core/blockcore-wallet/commit/32f5d3c))
+
+
+
+## <small>1.0.22 (2023-01-03)</small>
+
+* Add key import support for new accounts ([985c662](https://github.com/block-core/blockcore-wallet/commit/985c662))
+* Add support for imported private key ([dc8664a](https://github.com/block-core/blockcore-wallet/commit/dc8664a))
+* Add support for nsec private key import ([d56d44f](https://github.com/block-core/blockcore-wallet/commit/d56d44f))
+* Add support for XRC chain (#320) ([354dd8a](https://github.com/block-core/blockcore-wallet/commit/354dd8a)), closes [#320](https://github.com/block-core/blockcore-wallet/issues/320)
+* Fix issue with webpack build ([b284239](https://github.com/block-core/blockcore-wallet/commit/b284239))
+* Minor type fix for private key improt ([96d2231](https://github.com/block-core/blockcore-wallet/commit/96d2231))
+* Remove some debug logging that ends up on dapp consoles ([9144333](https://github.com/block-core/blockcore-wallet/commit/9144333))
+* Remove tabs in the default relay list ([7cce9ea](https://github.com/block-core/blockcore-wallet/commit/7cce9ea))
+* Update Cybits network to use standard derivation path for bech32 ([8c6764e](https://github.com/block-core/blockcore-wallet/commit/8c6764e))
+* Update to latest nostr-tools library ([f71fcae](https://github.com/block-core/blockcore-wallet/commit/f71fcae))
+* Update version and changelog ([375d0f1](https://github.com/block-core/blockcore-wallet/commit/375d0f1))
+* Update versoin and changelog ([fc5a68a](https://github.com/block-core/blockcore-wallet/commit/fc5a68a))
+
+
+
+## <small>1.0.20 (2022-12-25)</small>
+
+* Disable Angular CLI cache ([f270674](https://github.com/block-core/blockcore-wallet/commit/f270674))
+* Update blockcore-js with latest fix for SegWit PoS transactions ([5a85de1](https://github.com/block-core/blockcore-wallet/commit/5a85de1))
+* Update package-lock.json ([67bdba0](https://github.com/block-core/blockcore-wallet/commit/67bdba0))
+* Update version, changelog and lists ([ebc84ef](https://github.com/block-core/blockcore-wallet/commit/ebc84ef))
+* Use the correct purpose for default SBC and RSC addresses ([d382dd4](https://github.com/block-core/blockcore-wallet/commit/d382dd4))
+
+
+
+## <small>1.0.19 (2022-12-19)</small>
+
+* Add execution notification to calling website ([d439463](https://github.com/block-core/blockcore-wallet/commit/d439463))
+* Add executions counter for permissions and display under settings ([ef50a85](https://github.com/block-core/blockcore-wallet/commit/ef50a85)), closes [#318](https://github.com/block-core/blockcore-wallet/issues/318)
+* Don't show dialog on executions that don't require permissions (consent) ([6d541fc](https://github.com/block-core/blockcore-wallet/commit/6d541fc))
+* Fix a minor compile issue ([171d667](https://github.com/block-core/blockcore-wallet/commit/171d667))
+* Update version and changelog ([2a87767](https://github.com/block-core/blockcore-wallet/commit/2a87767))
+
+
+
+## <small>1.0.18 (2022-12-18)</small>
+
+* Add a key conversion tool for Nostr ([9398bad](https://github.com/block-core/blockcore-wallet/commit/9398bad))
+* Add export of private key using QR code ([14ffa60](https://github.com/block-core/blockcore-wallet/commit/14ffa60))
+* Add npub and nsec export format support for Nostr ([70029df](https://github.com/block-core/blockcore-wallet/commit/70029df))
+* Change to use hex as address values, but display as npub to users ([0246bbe](https://github.com/block-core/blockcore-wallet/commit/0246bbe))
+* Internally keep the Nostr addresses in hex format ([0bbcf1a](https://github.com/block-core/blockcore-wallet/commit/0bbcf1a))
+* Update the  bech32 prefix for Nostr ([0ac4a79](https://github.com/block-core/blockcore-wallet/commit/0ac4a79))
+* Update version and changelog, add QR code for public key ([f018e23](https://github.com/block-core/blockcore-wallet/commit/f018e23))
+
+
+
+## <small>1.0.17 (2022-12-18)</small>
+
+* Add copy button to private key export ([2c10f4f](https://github.com/block-core/blockcore-wallet/commit/2c10f4f))
+* Added export of individual private key on identity tools (#316) ([65f21b9](https://github.com/block-core/blockcore-wallet/commit/65f21b9)), closes [#316](https://github.com/block-core/blockcore-wallet/issues/316)
+* Fix guard clause for empty password input ([57e9c83](https://github.com/block-core/blockcore-wallet/commit/57e9c83))
+* Make the dashboard cleaner and more focused ([4286f11](https://github.com/block-core/blockcore-wallet/commit/4286f11))
+* Update version and changelog ([c5657a1](https://github.com/block-core/blockcore-wallet/commit/c5657a1))
+* Wrap the private key on export ([cb81224](https://github.com/block-core/blockcore-wallet/commit/cb81224))
+
+
+
+## <small>1.0.16 (2022-12-18)</small>
+
+* Fix issue with unexpected callbacks on web provider requests ([f181020](https://github.com/block-core/blockcore-wallet/commit/f181020))
+* Force a page reload whenever the extension has lost context (happens on updates) ([6b24d82](https://github.com/block-core/blockcore-wallet/commit/6b24d82))
+* Reduce visual clutter on wallet management menu ([657651b](https://github.com/block-core/blockcore-wallet/commit/657651b))
+* Remove "Actions" from Dashboard ([93ff517](https://github.com/block-core/blockcore-wallet/commit/93ff517))
+* Remove debug logging ([4b617fe](https://github.com/block-core/blockcore-wallet/commit/4b617fe))
+* Remove divider from dashboard to reduce visual clutter ([bc817c9](https://github.com/block-core/blockcore-wallet/commit/bc817c9))
+* Remove Profile and Tools for nostr identities ([29cfba2](https://github.com/block-core/blockcore-wallet/commit/29cfba2))
+* Update version and changelog ([7bef268](https://github.com/block-core/blockcore-wallet/commit/7bef268))
+
+
+
+## <small>1.0.15 (2022-12-17)</small>
+
+* Ensure that nostr get public key always work even when wallet is locked ([fe2f385](https://github.com/block-core/blockcore-wallet/commit/fe2f385))
+* Update lists ([508303c](https://github.com/block-core/blockcore-wallet/commit/508303c))
+* Update version and changelog ([108712c](https://github.com/block-core/blockcore-wallet/commit/108712c))
+
+
+
+## <small>1.0.14 (2022-12-16)</small>
+
+* Add language resources for new actions ([7b40a45](https://github.com/block-core/blockcore-wallet/commit/7b40a45))
+* Add working encryption for Nostr ([b5b565f](https://github.com/block-core/blockcore-wallet/commit/b5b565f))
+* Change the identity UI for nostr based idenetities ([00012e4](https://github.com/block-core/blockcore-wallet/commit/00012e4))
+* check that permission is not null (#309) ([121badb](https://github.com/block-core/blockcore-wallet/commit/121badb)), closes [#309](https://github.com/block-core/blockcore-wallet/issues/309)
+* Fix bug in get permission by key (#313) ([d958284](https://github.com/block-core/blockcore-wallet/commit/d958284)), closes [#313](https://github.com/block-core/blockcore-wallet/issues/313)
+* Fully implement BCIP-0003 with Wallet Key ([8ff8144](https://github.com/block-core/blockcore-wallet/commit/8ff8144))
+* Implements BCIP-0003 that have deterministic Wallet Key derivation ([04f8f24](https://github.com/block-core/blockcore-wallet/commit/04f8f24))
+* Refactor Nostr Provider and separate into dedicated class ([cddac01](https://github.com/block-core/blockcore-wallet/commit/cddac01))
+* Update labels and information on encrypt and decrypt actions ([7d70ef9](https://github.com/block-core/blockcore-wallet/commit/7d70ef9))
+* Update version and changelog ([1fbf7da](https://github.com/block-core/blockcore-wallet/commit/1fbf7da))
+* WIP: Add encrypt and decrypt actions for Nostr ([2a57feb](https://github.com/block-core/blockcore-wallet/commit/2a57feb))
+
+
+
+## <small>1.0.13 (2022-12-16)</small>
+
+* Add a feature list to README ([bfd0b19](https://github.com/block-core/blockcore-wallet/commit/bfd0b19))
+* Add a reference to NIP-06 that our Nostr network definition implements ([6d5dd4b](https://github.com/block-core/blockcore-wallet/commit/6d5dd4b))
+* Add nostr.signevent and utilize nostr-tools ([493d1d0](https://github.com/block-core/blockcore-wallet/commit/493d1d0))
+* Add some default Nostr relays ([841e2e4](https://github.com/block-core/blockcore-wallet/commit/841e2e4))
+* Add support for nostr.getrelays ([9adb44c](https://github.com/block-core/blockcore-wallet/commit/9adb44c))
+* Add support for nostr.publickey and fix UI issue for key selection ([636a305](https://github.com/block-core/blockcore-wallet/commit/636a305))
+* Add translations for nostr actions ([cbb95db](https://github.com/block-core/blockcore-wallet/commit/cbb95db))
+* Fix issue with invalid types on nostr-tools ([8fc70e2](https://github.com/block-core/blockcore-wallet/commit/8fc70e2))
+* Fix issue with types for signEvent call ([977414e](https://github.com/block-core/blockcore-wallet/commit/977414e))
+* Get an accounts balance from the provider (#304) ([f2f5f79](https://github.com/block-core/blockcore-wallet/commit/f2f5f79)), closes [#304](https://github.com/block-core/blockcore-wallet/issues/304)
+* Improve the title truncate using CSS instead of hard-limit with pipe ([021ae41](https://github.com/block-core/blockcore-wallet/commit/021ae41))
+* Minor fix for RTL style ([b9d173e](https://github.com/block-core/blockcore-wallet/commit/b9d173e))
+* Update README.md ([117350f](https://github.com/block-core/blockcore-wallet/commit/117350f))
+* Update version and changelog ([e53c574](https://github.com/block-core/blockcore-wallet/commit/e53c574))
+
+
+
+## <small>1.0.12 (2022-12-14)</small>
+
+* Add some instructions on cloning with submodule ([1627396](https://github.com/block-core/blockcore-wallet/commit/1627396))
+* Add Wallet password on Send (#305) ([63b802f](https://github.com/block-core/blockcore-wallet/commit/63b802f)), closes [#305](https://github.com/block-core/blockcore-wallet/issues/305)
+* Attempt to fix right to left (#310) ([3b0268c](https://github.com/block-core/blockcore-wallet/commit/3b0268c)), closes [#310](https://github.com/block-core/blockcore-wallet/issues/310)
+* Display decimals for tokens (#308) ([917a14c](https://github.com/block-core/blockcore-wallet/commit/917a14c)), closes [#308](https://github.com/block-core/blockcore-wallet/issues/308) [#300](https://github.com/block-core/blockcore-wallet/issues/300)
+* Fixes token display (#307) ([b20837e](https://github.com/block-core/blockcore-wallet/commit/b20837e)), closes [#307](https://github.com/block-core/blockcore-wallet/issues/307) [#306](https://github.com/block-core/blockcore-wallet/issues/306)
+* Update version and changelog ([8215dd4](https://github.com/block-core/blockcore-wallet/commit/8215dd4))
+
+
+
+## <small>1.0.11 (2022-12-11)</small>
+
+* Fix enabling sending ([9496dcb](https://github.com/block-core/blockcore-wallet/commit/9496dcb))
+* Fixed fail in Payment request (#303) ([efc6d75](https://github.com/block-core/blockcore-wallet/commit/efc6d75)), closes [#303](https://github.com/block-core/blockcore-wallet/issues/303) [#268](https://github.com/block-core/blockcore-wallet/issues/268)
+* Make the "Cancel" button close the payment request from provider ([21267aa](https://github.com/block-core/blockcore-wallet/commit/21267aa))
+* Make the "kid" fully qualified for DID requests ([83a5e33](https://github.com/block-core/blockcore-wallet/commit/83a5e33))
+* Make the identity node exactly same as coin/token nodes ([ff8f59c](https://github.com/block-core/blockcore-wallet/commit/ff8f59c))
+* Return transaction ID on payment requests ([69c82ef](https://github.com/block-core/blockcore-wallet/commit/69c82ef))
+* Update package-lock.json ([b72174a](https://github.com/block-core/blockcore-wallet/commit/b72174a))
+* Update the allow/ban lists ([6409096](https://github.com/block-core/blockcore-wallet/commit/6409096))
+* Update the QRCode package ([bc91d62](https://github.com/block-core/blockcore-wallet/commit/bc91d62))
+* Update version and changelog ([f8793b0](https://github.com/block-core/blockcore-wallet/commit/f8793b0))
+* WIP: payment.sign handler ([ffeac8d](https://github.com/block-core/blockcore-wallet/commit/ffeac8d))
+
+
+
+## <small>1.0.10 (2022-12-02)</small>
+
+* Handle the 'network' event in PWA mode ([53ca5b8](https://github.com/block-core/blockcore-wallet/commit/53ca5b8))
+* Update version and changelog ([0600486](https://github.com/block-core/blockcore-wallet/commit/0600486))
+
+
+
+## <small>1.0.9 (2022-12-02)</small>
+
+* Ensure that network status has run before initial index of new accounts ([b073bfa](https://github.com/block-core/blockcore-wallet/commit/b073bfa))
+* Update version and changelog ([d614986](https://github.com/block-core/blockcore-wallet/commit/d614986))
+
+
+
+## <small>1.0.8 (2022-12-02)</small>
+
+* Add City Chain Identity default account selection for Smart City Platform ([6249f85](https://github.com/block-core/blockcore-wallet/commit/6249f85))
+* Add VC Request handler ([f492b08](https://github.com/block-core/blockcore-wallet/commit/f492b08))
+* Change the lookup URL for identities to be a friendly URL ([3b1b20b](https://github.com/block-core/blockcore-wallet/commit/3b1b20b))
+* Reduce number of time indexing is run to optimize performance and network traffic ([233eb07](https://github.com/block-core/blockcore-wallet/commit/233eb07))
+* Update version and changelog ([56c5dbc](https://github.com/block-core/blockcore-wallet/commit/56c5dbc))
+
+
+
+## <small>1.0.7 (2022-11-29)</small>
+
+* Enable Identity on Smart City Platform ([86fe03f](https://github.com/block-core/blockcore-wallet/commit/86fe03f))
+* Fixed translation on Account.Login (#299) ([d1e55b7](https://github.com/block-core/blockcore-wallet/commit/d1e55b7)), closes [#299](https://github.com/block-core/blockcore-wallet/issues/299)
+* Made "SignVerify" centered (#298) ([e739869](https://github.com/block-core/blockcore-wallet/commit/e739869)), closes [#298](https://github.com/block-core/blockcore-wallet/issues/298)
+* Set purpose before re-calculate the derivation path ([b455ac7](https://github.com/block-core/blockcore-wallet/commit/b455ac7))
+* Sidechain fee (#297) ([f9cfc85](https://github.com/block-core/blockcore-wallet/commit/f9cfc85)), closes [#297](https://github.com/block-core/blockcore-wallet/issues/297) [#294](https://github.com/block-core/blockcore-wallet/issues/294)
+* Update diw-jwt dependency ([df3399b](https://github.com/block-core/blockcore-wallet/commit/df3399b))
+* Update the network for JWK and KEY DID Methods ([657d13a](https://github.com/block-core/blockcore-wallet/commit/657d13a))
+* Update the README with link to Guide and new animation ([b20f010](https://github.com/block-core/blockcore-wallet/commit/b20f010))
+* Update version and changelog ([e07c2df](https://github.com/block-core/blockcore-wallet/commit/e07c2df))
+
+
+
+## <small>1.0.6 (2022-11-27)</small>
+
+* Add "SignVerify" to .json (#295) ([a3221d0](https://github.com/block-core/blockcore-wallet/commit/a3221d0)), closes [#295](https://github.com/block-core/blockcore-wallet/issues/295)
+* Add basic publish of DID Document for did:is ([73dd6b4](https://github.com/block-core/blockcore-wallet/commit/73dd6b4))
+* Add support for generating the .well-known configuration in wallet ([5cd0686](https://github.com/block-core/blockcore-wallet/commit/5cd0686))
+* Add the noble-ecc-wrapper ([ba5178a](https://github.com/block-core/blockcore-wallet/commit/ba5178a))
+* Change the readable IDs to use 5 + 5 characters ([99b4e09](https://github.com/block-core/blockcore-wallet/commit/99b4e09))
+* Finalize migration to only use @noble/secp256k1 ([a12f247](https://github.com/block-core/blockcore-wallet/commit/a12f247))
+* Fix build error with QR code scanner ([d12295f](https://github.com/block-core/blockcore-wallet/commit/d12295f))
+* Migrate identity logic to use published library ([6fb2cb8](https://github.com/block-core/blockcore-wallet/commit/6fb2cb8))
+* Remove buttons from profile as profile support is not functional (needs backend) ([b3444ff](https://github.com/block-core/blockcore-wallet/commit/b3444ff))
+* Revert to older version of ecpair ([99938ed](https://github.com/block-core/blockcore-wallet/commit/99938ed))
+* tiny-secp256k1 relies on WebAssembly, remove the library ([bba6fe8](https://github.com/block-core/blockcore-wallet/commit/bba6fe8))
+* Update some of dependency packages ([689dd4b](https://github.com/block-core/blockcore-wallet/commit/689dd4b))
+* Update version and changelog ([3909808](https://github.com/block-core/blockcore-wallet/commit/3909808))
+
+
+
+## <small>1.0.5 (2022-11-21)</small>
+
+* Add ability to filter on type and DID Method ([3d07285](https://github.com/block-core/blockcore-wallet/commit/3d07285))
+* Add component for "did.request" action ([3f9e6a4](https://github.com/block-core/blockcore-wallet/commit/3f9e6a4))
+* Add DID Method prefix for selected key ([6173632](https://github.com/block-core/blockcore-wallet/commit/6173632))
+* Add filter to account listing ([3bee1fa](https://github.com/block-core/blockcore-wallet/commit/3bee1fa))
+* Add signature generation and proper return response for did.request ([616dc1f](https://github.com/block-core/blockcore-wallet/commit/616dc1f))
+* Add some extra validation on OP_RETURN data for sidechain swaps ([ed3ea1a](https://github.com/block-core/blockcore-wallet/commit/ed3ea1a))
+* Add some packages to allowedCommonJsDependencies (#286) ([b3bcba8](https://github.com/block-core/blockcore-wallet/commit/b3bcba8)), closes [#286](https://github.com/block-core/blockcore-wallet/issues/286)
+* Add status to the action service allowing actions to change the UI ([1f1c776](https://github.com/block-core/blockcore-wallet/commit/1f1c776))
+* Add support for did.supportedMethods in provider ([b9db6fc](https://github.com/block-core/blockcore-wallet/commit/b9db6fc))
+* Add the ability to sign message (#290) ([42b9e38](https://github.com/block-core/blockcore-wallet/commit/42b9e38)), closes [#290](https://github.com/block-core/blockcore-wallet/issues/290)
+* Add the DecentralizedWebNode instance to background and frontend (PWA) ([eb59c54](https://github.com/block-core/blockcore-wallet/commit/eb59c54))
+* Add types for did.request action ([6eb7365](https://github.com/block-core/blockcore-wallet/commit/6eb7365))
+* Add verify (#291) ([144e19c](https://github.com/block-core/blockcore-wallet/commit/144e19c)), closes [#291](https://github.com/block-core/blockcore-wallet/issues/291)
+* Change the DID Request handler to return JWT as proof ([8eb7fc3](https://github.com/block-core/blockcore-wallet/commit/8eb7fc3))
+* Completed more RU translation (#292) ([96adde6](https://github.com/block-core/blockcore-wallet/commit/96adde6)), closes [#292](https://github.com/block-core/blockcore-wallet/issues/292)
+* Fix a minor issue with Norwegian (#289) ([d199440](https://github.com/block-core/blockcore-wallet/commit/d199440)), closes [#289](https://github.com/block-core/blockcore-wallet/issues/289)
+* Fix a typo in the action dialog ([ed4f4b6](https://github.com/block-core/blockcore-wallet/commit/ed4f4b6))
+* Fix issue with sidechain swap and max-send ([d9586c0](https://github.com/block-core/blockcore-wallet/commit/d9586c0))
+* Improve handling of unknown message requests ([96258ee](https://github.com/block-core/blockcore-wallet/commit/96258ee))
+* Make the selected address displayed so it can be copied ([e7dc8c9](https://github.com/block-core/blockcore-wallet/commit/e7dc8c9))
+* Sidechain address is required for swaps ([1e93cc9](https://github.com/block-core/blockcore-wallet/commit/1e93cc9))
+* Sign & Verify UI (#293) ([112da81](https://github.com/block-core/blockcore-wallet/commit/112da81)), closes [#293](https://github.com/block-core/blockcore-wallet/issues/293)
+* Update the type on proof for DID Request ([be1d114](https://github.com/block-core/blockcore-wallet/commit/be1d114))
+* Update version and changelog ([494e914](https://github.com/block-core/blockcore-wallet/commit/494e914))
+
+
+
+## <small>1.0.4 (2022-11-10)</small>
+
+* Add partial translation (#283) ([0030dab](https://github.com/block-core/blockcore-wallet/commit/0030dab)), closes [#283](https://github.com/block-core/blockcore-wallet/issues/283)
+* Add Russian language to language selection list ([3e65010](https://github.com/block-core/blockcore-wallet/commit/3e65010))
+* Add the lists submodule ([f6deb4f](https://github.com/block-core/blockcore-wallet/commit/f6deb4f))
+* Add the Russian language file (#272) ([5e069a7](https://github.com/block-core/blockcore-wallet/commit/5e069a7)), closes [#272](https://github.com/block-core/blockcore-wallet/issues/272)
+* Add usage of web5-injector ([619cd30](https://github.com/block-core/blockcore-wallet/commit/619cd30))
+* Add use of coinselect to improve transaction sending (#281) ([bd7fd7e](https://github.com/block-core/blockcore-wallet/commit/bd7fd7e)), closes [#281](https://github.com/block-core/blockcore-wallet/issues/281)
+* Add verification of allow/deny based upon the lists provided ([7fa25f8](https://github.com/block-core/blockcore-wallet/commit/7fa25f8))
+* Added note text in recovery and receiving (#269) ([ce23905](https://github.com/block-core/blockcore-wallet/commit/ce23905)), closes [#269](https://github.com/block-core/blockcore-wallet/issues/269)
+* Adding Molie nrtwork and MOL (#278) ([8980a1c](https://github.com/block-core/blockcore-wallet/commit/8980a1c)), closes [#278](https://github.com/block-core/blockcore-wallet/issues/278)
+* Avoid performing JSON stringify on text content during signing ([034bb95](https://github.com/block-core/blockcore-wallet/commit/034bb95))
+* Ensure that background manager instance is created ([71d414d](https://github.com/block-core/blockcore-wallet/commit/71d414d))
+* Ensure that submodules are retrieved in the checkout ([c0bb3f5](https://github.com/block-core/blockcore-wallet/commit/c0bb3f5))
+* Fix issue with signing message ([db6ff7f](https://github.com/block-core/blockcore-wallet/commit/db6ff7f))
+* Fix minor issue on the swap send page (#277) ([72372d8](https://github.com/block-core/blockcore-wallet/commit/72372d8)), closes [#277](https://github.com/block-core/blockcore-wallet/issues/277) [#277](https://github.com/block-core/blockcore-wallet/issues/277)
+* Fix Website title (#284) ([487f621](https://github.com/block-core/blockcore-wallet/commit/487f621)), closes [#284](https://github.com/block-core/blockcore-wallet/issues/284)
+* Return the network on signing results ([f74c982](https://github.com/block-core/blockcore-wallet/commit/f74c982))
+* Update fa.json (#271) ([f5d55f6](https://github.com/block-core/blockcore-wallet/commit/f5d55f6)), closes [#271](https://github.com/block-core/blockcore-wallet/issues/271)
+* Update some package dependencies ([629d2e0](https://github.com/block-core/blockcore-wallet/commit/629d2e0))
+* Update version and changelog ([a889e6a](https://github.com/block-core/blockcore-wallet/commit/a889e6a))
+
+
+
 ## <small>1.0.3 (2022-10-27)</small>
 
 * Add display of version on the initial wallet create dialog ([4c63573](https://github.com/block-core/blockcore-wallet/commit/4c63573))

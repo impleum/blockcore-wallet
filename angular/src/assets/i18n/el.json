@@ -35,18 +35,14 @@
   },
   "Dashboard": {
     "Accounts": "Λογαριασμοί",
-    "Actions": "Ενέργειες",
     "Vaults": "Θησαυροφυλάκια",
     "Collectibles": "Συλλεκτικά",
     "Inbox": "Εισερχόμενα",
-    "Tools": "Εργαλεία",
     "AddressBook": "Βιβλίο διευθύνσεων",
     "AddAccount": "Προσθήκη λογαριασμού",
     "AddWallet": "Προσθήκη Πορτοφολιού",
     "Exchange": "Ανταλλαγή (αγορά/πώληση)",
     "ScanPayment": "Σάρωση πληρωμής",
-    "CreateAccount": "Δημιουργήστε λογαριασμό",
-    "CreateWallet": "Δημιουργήστε Πορτοφολιού",
     "NoCollectablesFound": "Δεν βρέθηκαν συλλεκτικά αντικείμενα",
     "GoToMarketplace": "Πηγαίνετε στην αγορά",
     "ZeroAccounts": "Το πορτοφόλι σας έχει μηδενικούς λογαριασμούς."
@@ -348,7 +344,6 @@
     "SelectSidechain": "Επιλέξτε μια πλευρική αλυσίδα",
     "FederationSwapAddress": "Διεύθυνση ανταλλαγής ομοσπονδίας",
     "SidechainAddress": "Διεύθυνση Sidechain",
-    "SwapCardMessage": "Η πρόσθετη προμήθεια ανταλλαγής αλυσίδας λαμβάνεται από το ποσό που καταχωρίσατε, το οποίο είναι ένα σταθερό ποσό «0,001». Εάν θέλετε ο δέκτης να πάρει «1», εισαγάγετε το ποσό «1.001».",
     "SwapAmountMin": "Το ποσό πρέπει να είναι μεγαλύτερο από 1.",
     "FederationAddress": "Διεύθυνση Ομοσπονδίας",
     "TargetAddressOn": "Η διεύθυνση στόχος είναι ενεργοποιημένη",
@@ -399,7 +394,7 @@
     "AuthorizeOnce": "Εξουσιοδότηση μία φορά",
     "AuthorizeFor5Miutes": "Εξουσιοδότηση για 5 λεπτά",
     "AuthorizeForever": "Εξουσιοδότηση για πάντα",
-    "Cancel":"Cancel"
+    "Cancel": "Cancel"
   },
   "Collectables": {
     "PurchasePrice": "τιμή αγοράς",
@@ -420,6 +415,17 @@
     "ExchangeSTRAXForBTC": "Exchange STRAX for BTC with Exolix",
     "Partners": "Partners",
     "PartnersDescription": "Using our links and affiliated partners, helps support the continued development of this wallet."
+  },
+  "SignVerify": {
+    "MessageToSign": "Message to sign",
+    "Signature": "Signature",
+    "Sign": "Sign",
+    "SignatureVerified": "Signature verified",
+    "SignatureVerifiedDescription": "This means that the message has been verified to be signed by the owner of the address/identity specified.",
+    "Verify": "Verify",
+    "FailedSignatureVerification": "Failed signature verification",
+    "FailedSignatureVerificationDescription": "This means that the message was not signed by the owner of the address/identity specified.",
+    "ClearAll": "Clear All"
   },
   "english": "Αγγλικά",
   "chinese_simplified": "Κινέζικα (Απλοποιημένα)",

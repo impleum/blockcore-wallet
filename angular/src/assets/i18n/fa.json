@@ -35,18 +35,14 @@
   },
   "Dashboard": {
     "Accounts": "حساب‌ها",
-    "Actions": "عملیات",
     "Vaults": "خزانه‌ها",
     "Collectibles": "کلکسیون",
     "Inbox": "صندوق ورودی",
-    "Tools": "ابزارها",
     "AddressBook": "دفترچه آدرس",
     "AddAccount": "افزودن حساب",
     "AddWallet": "افزودن کیف پول",
     "Exchange": "صرافی (خرید/فروش)",
     "ScanPayment": "اسکن پرداخت",
-    "CreateAccount": "ساختن حساب",
-    "CreateWallet": "ساختن کیف پول",
     "NoCollectablesFound": "موردی یافت نشد",
     "GoToMarketplace": "به بازار بروید",
     "ZeroAccounts": "کیف پول شما هیچ حسابی ندارد."
@@ -348,7 +344,6 @@
     "SelectSidechain": "یک زنجیره جانبی را انتخاب کنید",
     "FederationSwapAddress": "آدرس مبادله فدراسیون",
     "SidechainAddress": "آدرس زنجیره جانبی",
-    "SwapCardMessage": "کارمزد مبادله زنجیره ای از مبلغ وارد شده گرفته می‌شود که مبلغ ثابت و برابر '0.001' است. اگر می‌خواهید گیرنده '1' دریافت کند، مقدار '0.001' را وارد کنید.",
     "SwapAmountMin": "مبلغ باید بیش از 1 باشد.",
     "FederationAddress": "آدرس فدراسیون",
     "TargetAddressOn": "آدرس مورد نظر در",
@@ -399,7 +394,7 @@
     "AuthorizeOnce": "مجاز برای یک بار",
     "AuthorizeFor5Minutes": "به مدت 5 دقیقه مجاز",
     "AuthorizeForever": "برای همیشه مجاز",
-    "Cancel":"انصراف"
+    "Cancel": "انصراف"
   },
   "Manifest": {
     "Description": "Non-Custodial wallet for Coins, Tokens, Identities, NFTs and more."
@@ -420,6 +415,17 @@
     "ExchangeSTRAXForBTC": "STRAX را با BTC با Exolix مبادله کنید",
     "Partners": "شرکا",
     "PartnersDescription": "استفاده از پیوندها و شرکای وابسته ما، به حمایت از توسعه مداوم این کیف پول کمک می‌کند."
+  },
+  "SignVerify": {
+    "MessageToSign": "Message to sign",
+    "Signature": "Signature",
+    "Sign": "Sign",
+    "SignatureVerified": "Signature verified",
+    "SignatureVerifiedDescription": "This means that the message has been verified to be signed by the owner of the address/identity specified.",
+    "Verify": "Verify",
+    "FailedSignatureVerification": "Failed signature verification",
+    "FailedSignatureVerificationDescription": "This means that the message was not signed by the owner of the address/identity specified.",
+    "ClearAll": "Clear All"
   },
   "english": "English",
   "chinese_simplified": "Chinese (Simplified)",

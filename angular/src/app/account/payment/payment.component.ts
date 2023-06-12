@@ -19,7 +19,7 @@ import { NetworksService, SendService, UIState, WalletManager } from '../../serv
 })
 export class PaymentComponent implements OnInit, OnDestroy {
   network: Network;
-  public contact: Contact;
+  contact: Contact;
   subscriptions: Subscription[] = [];
   filteredAccounts: Account[];
   amount: Big;
@@ -36,12 +36,9 @@ export class PaymentComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private contactStore: ContactStore,
     public translate: TranslateService
-  ) {
-    this.uiState.showBackButton = true;
-    this.uiState.goBackHome = false;
-  }
+  ) {}
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
@@ -49,7 +46,14 @@ export class PaymentComponent implements OnInit, OnDestroy {
     this.subscriptions = [];
   }
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit() {
+    if (this.uiState.isPaymentAction) {
+      this.uiState.showBackButton = false;
+    } else {
+      this.uiState.showBackButton = true;
+      this.uiState.goBackHome = true;
+    }
+
     this.network = this.networkService.getNetworkBySymbol(this.uiState.payment.network);
     this.amount = this.paymentRequest.parseAmount(this.uiState.payment.options.amount);
 
@@ -67,9 +71,14 @@ export class PaymentComponent implements OnInit, OnDestroy {
     });
   }
 
-  async cancel() {
+  cancel(close: boolean) {
     this.uiState.payment = null;
-    this.router.navigateByUrl('/dashboard');
+
+    if (close) {
+      window.close();
+    } else {
+      this.router.navigateByUrl('/dashboard');
+    }
   }
 
   async sendToUsing(address: string, accountId: string) {

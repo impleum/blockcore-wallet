@@ -54,6 +54,18 @@ import { ActionSignMessageComponent } from './action/sign-message/sign.component
 import { ActionVaultSetupComponent } from './action/vault-setup/vault-setup.component';
 import { PaymentComponent } from './account/payment/payment.component';
 import { DebuggerComponent } from './settings/debugger/debugger.component';
+import { SignComponent } from './sign/sign.component';
+import { ActionDidRequestComponent } from './action/did-request/did-request.component';
+import { ActionVcRequestComponent } from './action/vc-request/vc-request.component';
+import { ActionWalletsComponent } from './action/wallets/wallets.component';
+import { ActionNostrPublicKeyComponent } from './action/nostr.publickey/nostr.publickey.component';
+import { ActionNostrSignEventComponent } from './action/nostr.signevent/nostr.signevent.component';
+import { ActionNostrEncryptComponent } from './action/nostr.encrypt/nostr.encrypt.component';
+import { ActionNostrDecryptComponent } from './action/nostr.decrypt/nostr.decrypt.component';
+import { ActionTransactionSendComponent } from './action/transaction.send/transaction.send.component';
+import { ActionWalletUnlockComponent } from './action/wallet.unlock/wallet.unlock.component';
+import { ActionSwapsSendComponent } from './action/swaps.send/swaps.send.component';
+
 const routes: Routes = [
   {
     path: '',
@@ -342,6 +354,13 @@ const routes: Routes = [
   //   path: 'vault/remove/:index', component: VaultRemoveComponent
   // },
   {
+    path: 'sign',
+    component: SignComponent,
+    resolve: {
+      data: LoadingResolverService,
+    },
+  },
+  {
     path: 'dashboard',
     component: DashboardComponent,
     resolve: {
@@ -403,12 +422,83 @@ const routes: Routes = [
         },
       },
       {
+        path: 'wallets',
+        component: ActionWalletsComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'did.request',
+        component: ActionDidRequestComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'vc.request',
+        component: ActionVcRequestComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
         path: 'vaultSetup',
         component: ActionVaultSetupComponent,
         resolve: {
           data: LoadingResolverService,
         },
       },
+      {
+        path: 'nostr.publickey',
+        component: ActionNostrPublicKeyComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'nostr.signevent',
+        component: ActionNostrSignEventComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'nostr.encrypt',
+        component: ActionNostrEncryptComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'nostr.decrypt',
+        component: ActionNostrDecryptComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'transaction.send',
+        component: ActionTransactionSendComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'wallet.unlock',
+        component: ActionWalletUnlockComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      {
+        path: 'atomicswaps.send',
+        component: ActionSwapsSendComponent,
+        resolve: {
+          data: LoadingResolverService,
+        },
+      },
+      
       // {
       //   path: 'signVerifiableCredential',
       //   component: ActionSignVerifiableCredentialComponent,

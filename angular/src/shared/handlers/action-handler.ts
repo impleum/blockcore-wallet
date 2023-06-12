@@ -17,8 +17,8 @@ export class ActionState {
   handler: ActionHandler;
   id: string;
   id2: string;
-  method: string;
-  content: object | string;
+  // method: string;
+  content: object | string | any;
   prompt: any;
   promptPermission: any;
   windowId: number | undefined;

@@ -55,11 +55,58 @@ export class BackgroundManager {
 
   intervalRef: any;
 
-  async getKey(walletId: string, accountId: string, keyId: string) {
+  /** This get's wallet and all the accounts within it. */
+  async getWalletAndAccounts(walletId: string) {
+    const result: any = {};
+
+    const wallet = await this.sharedManager.getWallet(walletId);
+
+    if (!wallet) {
+      return null;
+    }
+
+    // VERY IMPORTANT WE MAP THE OBJECTS!! These objects contains secret recovery phrase (encrypted) and xpub for accounts!
+    result.wallet = {
+      id: wallet.id,
+      name: wallet.name,
+    };
+
+    result.accounts = [];
+    // Here we probably need to loop all accounts and get ALL data.
+
+    for (var i = 0; i < wallet.accounts.length; i++) {
+      const account = wallet.accounts[i];
+      const accountData = await this.getAccount(walletId, account.identifier);
+
+      // VERY IMPORTANT WE MAP THE OBJECTS!!
+      // TODO: Decide what to use from account data, history, etc. is available if we want.
+      const accountEntry = {
+        icon: accountData.account.icon,
+        name: accountData.account.name,
+        id: accountData.account.identifier,
+        network: accountData.account.network,
+        networkType: accountData.account.networkType,
+        purpose: accountData.account.purpose,
+        purposeAddress: accountData.account.purposeAddress,
+        type: accountData.account.type,
+
+        history: accountData.accountHistory,
+        state: accountData.accountState,
+        networkDefinition: accountData.network,
+      };
+
+      result.accounts.push(accountEntry);
+    }
+
+    return result;
+  }
+
+  async getDerivedKeyFromWalletPath(walletId: string, accountId: string, path: string) {
     await this.sharedManager.loadPrivateKeys();
 
     // Get the secret seed.
     const masterSeedBase64 = this.sharedManager.getPrivateKey(walletId);
+    if (!masterSeedBase64) throw Error(`Error - Wallet may be locked`);
     const masterSeed = Buffer.from(masterSeedBase64, 'base64');
 
     const wallet = await this.sharedManager.getWallet(walletId);
@@ -68,7 +115,66 @@ export class BackgroundManager {
 
     // Create the master node.
     const masterNode = HDKey.fromMasterSeed(masterSeed, network.bip32);
+    
+    // based on BCIP3 we allow to derive a key only
+    // under the wallet path and it must be hardened keys.
+    var node = masterNode.derive(`m/3'/${account.network}'/${path}`);
+    return { network, node };
+  }
+
+  async getAccount(walletId: string, accountId: string) {
+    const wallet = await this.sharedManager.getWallet(walletId);
+    const account = this.sharedManager.getAccount(wallet, accountId);
+    const network = this.sharedManager.getNetwork(account.networkType);
+
+    const accountStateStore = new AccountStateStore();
+    await accountStateStore.load();
+    var accountState = accountStateStore.get(account.identifier);
+
+    const accountHistoryStore = new AccountHistoryStore();
+    await accountHistoryStore.load();
+    var accountHistory = accountHistoryStore.get(account.identifier);
+
+    return { network, account, accountState, accountHistory };
+  }
+
+  async isKeyUnlocked(walletId: string) {
+    await this.sharedManager.loadPrivateKeys();
+
+    const masterSeedBase64 = this.sharedManager.getPrivateKey(walletId);
+
+    if (!masterSeedBase64) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async getKey(walletId: string, accountId: string, keyId: string) {
+    await this.sharedManager.loadPrivateKeys();
+
+    // Get the secret seed.
+    const masterSeedBase64 = this.sharedManager.getPrivateKey(walletId);
+
+    if (!masterSeedBase64) {
+      return { network: null, node: null };
+    }
+
+    const masterSeed = Buffer.from(masterSeedBase64, 'base64');
+
+    const wallet = await this.sharedManager.getWallet(walletId);
+    const account = this.sharedManager.getAccount(wallet, accountId);
+    const network = this.sharedManager.getNetwork(account.networkType);
+
+    // Create the master node.
+    const masterNode = HDKey.fromMasterSeed(masterSeed, network.bip32);
+
+    if (account.prv) {
+      return { node: { privateKey: account.prv }, network } as any;
+    }
+
     var node = masterNode.derive(`m/${account.purpose}'/${account.network}'/${account.index}'/${keyId}`);
+
     return { network, node };
   }
 
@@ -152,7 +258,7 @@ export class BackgroundManager {
                 networkType: account.networkType,
                 availability: IndexerApiStatus.Error,
                 status: 'Error: ' + data.error,
-                relayFee: 0.0001 * FEE_FACTOR,
+                relayFee: 10,
               };
             } else {
               const blocksBehind = data.blockchain.blocks - data.syncBlockIndex;
@@ -187,8 +293,7 @@ export class BackgroundManager {
               networkType: account.networkType,
               availability: IndexerApiStatus.Error,
               status: 'Error: ' + response.status,
-              relayFee: 0.0001 * FEE_FACTOR,
-              // relayFee: network.feeRate * FEE_FACTOR, // feeRate is in satoshi, but relayFee is in Bitcoin.
+              relayFee: 10,
             };
           }
         } catch (error: any) {
@@ -209,7 +314,7 @@ export class BackgroundManager {
               networkType: account.networkType,
               availability: IndexerApiStatus.Error,
               status: 'Error',
-              relayFee: 0.0001 * FEE_FACTOR,
+              relayFee: 10,
             };
           } else if (error.request) {
             // The request was made but no response was received
@@ -225,7 +330,7 @@ export class BackgroundManager {
               networkType: account.networkType,
               availability: IndexerApiStatus.Offline,
               status: 'Offline',
-              relayFee: 0.0001 * FEE_FACTOR,
+              relayFee: 10,
             };
           } else {
             // Something happened in setting up the request that triggered an Error
@@ -238,7 +343,7 @@ export class BackgroundManager {
               networkType: account.networkType,
               availability: IndexerApiStatus.Unknown,
               status: 'Error:' + error.message,
-              relayFee: 0.0001 * FEE_FACTOR,
+              relayFee: 10,
             };
           }
         }

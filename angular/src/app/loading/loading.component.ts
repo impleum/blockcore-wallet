@@ -146,18 +146,25 @@ export class LoadingComponent implements OnInit, OnDestroy {
       // Parse the payment request and keep it in the state until wallet is ready:
       if (parameters.pay) {
         this.uiState.payment = this.paymentRequest.decode(this.paymentRequest.removeHandler(parameters.pay));
+        this.uiState.isPaymentAction = false;
         console.log('Payment request:', this.uiState.payment);
       } else if (this.uiState.action?.action == 'payment') {
         const param = this.uiState.action.params[0];
         this.uiState.payment = this.paymentRequest.transform(param);
+        this.uiState.isPaymentAction = true;
 
         // Reset the action as payment is not a normal action.
         this.uiState.action = null;
       }
     }
 
-    // Activate a wallet if not active.
-    if (this.walletManager.hasWallets && !this.walletManager.activeWallet && this.uiState.persisted.previousWalletId) {
+    // If the loading was triggered by wallet.unlock action, make sure we first change the active wallet before we show
+    // the unlock screen.
+    if (this.uiState.action?.action === 'wallet.unlock') {
+      const walletId = this.uiState.action.params[0].walletId;
+      await this.walletManager.setActiveWallet(walletId);
+    } else if (this.walletManager.hasWallets && !this.walletManager.activeWallet && this.uiState.persisted.previousWalletId) {
+      // Activate a wallet if not active.
       await this.walletManager.setActiveWallet(this.uiState.persisted.previousWalletId);
       await this.walletManager.setActiveAccount(this.uiState.persisted.previousAccountId);
     }

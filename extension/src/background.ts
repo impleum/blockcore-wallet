@@ -5,13 +5,14 @@ import { RunState } from '../../angular/src/shared/task-runner';
 import { WalletStore } from '../../angular/src/shared/store/wallet-store';
 import { PermissionServiceShared } from '../../angular/src/shared/permission.service';
 import * as browser from 'webextension-polyfill';
-import { ActionState, DomainVerification, Handlers } from '../../angular/src/shared';
+import { ActionState, DecentralizedWebNode, DomainVerification, Handlers } from '../../angular/src/shared';
 import { Mutex } from 'async-mutex';
 import { StorageService } from '../../angular/src/shared/storage.service';
 import { RuntimeService } from '../../angular/src/shared/runtime.service';
 import { NetworkLoader } from '../../angular/src/shared/network-loader';
 import { MessageService } from '../../angular/src/shared';
 import { EventBus } from '../../angular/src/shared/event-bus';
+import { Dwn, DataStream, DidKeyResolver, Jws, RecordsWrite, RecordsQuery } from '@tbd54566975/dwn-sdk-js';
 
 // let state: ActionState;
 let prompt: any | null;
@@ -21,10 +22,12 @@ let permissionService = new PermissionServiceShared();
 let watchManager: BackgroundManager | null;
 let networkManager: BackgroundManager;
 let indexing = false;
+let customActionResponse = undefined;
 
 let networkLoader = new NetworkLoader();
 let runtimeService = new RuntimeService();
 let messageService = new MessageService(runtimeService, new EventBus());
+let dwn = new DecentralizedWebNode();
 
 let shared = new SharedManager(new StorageService(runtimeService), new WalletStore(), networkLoader, messageService);
 const networkUpdateInterval = 45000;
@@ -50,6 +53,10 @@ browser.runtime.onMessage.addListener(async (msg: ActionMessage, sender) => {
 
   // When messages are coming from popups, the prompt will be set.
   if (msg.prompt) {
+    if (msg.promptResponse) {
+      customActionResponse = msg.promptResponse;
+    }
+
     return handlePromptMessage(msg, sender);
   } else if (msg.source == 'provider') {
     return handleContentScriptMessage(msg);
@@ -61,12 +68,31 @@ browser.runtime.onMessage.addListener(async (msg: ActionMessage, sender) => {
       await executeIndexer();
     } else if (msg.type === 'watch') {
       await runWatcher();
+    } else if (msg.type === 'data:get') {
+      await getDwnData(msg);
     } else if (msg.type === 'network') {
-      await networkStatusWatcher();
+      // When we get the 'network' message, we'll scan network and then run index.
+      await updateNetworkStatus();
+      await executeIndexer();
     } else if (msg.type === 'activated') {
       // console.log('THE UI WAS ACTIVATED!!');
       // When UI is triggered, we'll also trigger network watcher.
       await networkStatusWatcher();
+    } else if (msg.type === 'broadcast') {
+      // Grab the content returned in this message and use as custom action response.
+      customActionResponse = msg.response.response;
+
+      // If there is an active prompt, it means we should resolve it with the broadcast result:
+      if (prompt) {
+        prompt?.resolve?.();
+        prompt = null;
+        releaseMutex();
+      }
+
+      // if (sender) {
+      //   // Remove the popup window that was opened:
+      //   browser.windows.remove(sender.tab.windowId);
+      // }
     }
   } else {
     // console.log('Unhandled message:', msg);
@@ -111,81 +137,123 @@ async function handleContentScriptMessage(message: ActionMessage) {
   const state = new ActionState();
   state.id = message.id;
   state.id2 = id;
+
+  // This will throw error if the action is not supported.
   state.handler = Handlers.getAction(method, networkManager); // watchManager can sometimes be null.
   state.message = message;
 
   // Make sure we reload wallets at this point every single process.
   // await this.walletStore.load();
   // await this.accountStateStore.load();
-
   // const wallets = this.walletStore.getWallets();
-
   // ActionStateHolder.prompts.push(state);
-
-  // console.log('prompts:', JSON.stringify(ActionStateHolder.prompts));
-  // console.log('prompts (length):', ActionStateHolder.prompts.length);
 
   // Use the handler to prepare the content to be displayed for signing.
   const prepare = await state.handler.prepare(state);
   state.content = prepare.content;
 
-  // Reload the permissions each time.
-  await permissionService.refresh();
-
   let permission: Permission | unknown | null = null;
 
-  if (params.key) {
-    permission = permissionService.findPermissionByKey(message.app!, method, params.key);
-  } else {
-    // Get all existing permissions that exists for this app and method:
-    let permissions = permissionService.findPermissions(message.app!, method);
+  if (prepare.consent) {
+    // Reload the permissions each time.
+    await permissionService.refresh();
 
-    // If there are no specific key specified in the signing request, just grab the first permission that is approved for this
-    // website and use that. Normally there will only be a single one if the web app does not request specific key.
-    if (permissions.length > 0) {
-      permission = permissions[0];
+    if (params?.key) {
+      permission = permissionService.findPermissionByKey(message.app!, method, params.key);
+    } else {
+      // Get all existing permissions that exists for this app and method:
+      let permissions = permissionService.findPermissions(message.app!, method) as any[];
+
+      // If there are no specific key specified in the signing request, just grab the first permission that is approved for this
+      // website and use that. Normally there will only be a single one if the web app does not request specific key.
+      // This key is selected based upon app and method.
+      if (permissions?.length > 0) {
+        permission = permissions[0];
+      }
+    }
+
+    // Check if user have already approved this kind of access on this domain/host.
+    if (!permission) {
+      try {
+        // Keep a copy of the prompt message, we need it to finalize if user clicks "X" to close window.
+        // state.promptPermission = await promptPermission({ app: message.app, id: message.id, method: method, params: message.args.params });
+        permission = await promptPermission(state);
+        // authorized, proceed
+      } catch (err) {
+        console.error('Permission not accepted: ', err);
+
+        // When the user clicks X during a payment request, the user might still have completed the process, and
+        // we should return a successful response here. For other actions, clicking X means "Cancel"/"Deny".
+
+        // not authorized, stop here
+        return {
+          error: { message: `Insufficient permissions, required "${method}".` },
+        };
+      }
+    } else {
+      // TODO: This logic can be put into the query into permission set, because permissions
+      // must be stored with more keys than just "action", it must contain wallet/account and potentially keyId.
+
+      // If there exists an permission, verify that the permission applies to the specified (or active) wallet and account.
+      // If the caller has supplied walletId and accountId, use that.
+      if (message.walletId && message.accountId) {
+      } else {
+        // If nothing is supplied, verify against the current active wallet/account.
+      }
     }
   }
 
-  // permissionService.findPermission(message.app, method, message.walletId, message.accountId, message.keyId);
-  // let permissionSet = permissionService.get(message.app);
-
-  // if (permissionSet) {
-  //   permission = permissionSet.permissions[method];
-  // }
-
-  // Check if user have already approved this kind of access on this domain/host.
-  if (!permission) {
-    try {
-      // Keep a copy of the prompt message, we need it to finalize if user clicks "X" to close window.
-      // state.promptPermission = await promptPermission({ app: message.app, id: message.id, method: method, params: message.args.params });
-      permission = await promptPermission(state);
-      // authorized, proceed
-    } catch (_) {
-      // not authorized, stop here
-      return {
-        error: { message: `Insufficient permissions, required "${method}".` },
-      };
-    }
-  } else {
-    // TODO: This logic can be put into the query into permission set, because permissions
-    // must be stored with more keys than just "action", it must contain wallet/account and potentially keyId.
-
-    // If there exists an permission, verify that the permission applies to the specified (or active) wallet and account.
-    // If the caller has supplied walletId and accountId, use that.
-    if (message.walletId && message.accountId) {
-    } else {
-      // If nothing is supplied, verify against the current active wallet/account.
-    }
+  if (customActionResponse) {
+    // Clone and clean.
+    const customReturn = JSON.stringify(customActionResponse);
+    customActionResponse = undefined;
+    return JSON.parse(customReturn);
   }
 
   try {
+    const p = <Permission>permission;
+
+    if (p) {
+      const isKeyUnlocked = await networkManager.isKeyUnlocked(p.walletId);
+
+      // The key is empty if the wallet is locked. Force user to unlock before we continue.
+      if (p && prepare.consent && !isKeyUnlocked) {
+        // Clone existing state for use with only unlocking.
+        const unlockState = JSON.parse(JSON.stringify(state)) as ActionState;
+
+        unlockState.message.request.method = 'wallet.unlock';
+        unlockState.message.request.params = [{ walletId: p.walletId }];
+
+        await promptUnlock(unlockState);
+      }
+    }
+
     // User have given permission to execute.
-    const result = await state.handler.execute(state, <Permission>permission);
-    console.log('ACTION RESPONSE: ', result);
+    const result = await state.handler.execute(state, p);
+    // console.log('ACTION RESPONSE: ', result);
+
+    // Increase the execution counter
+    const executions = await permissionService.increaseExecution(<Permission>permission);
+
+    // If this execution required consent then display a notification.
+    if (prepare.consent) {
+      result.notification = `Blockcore Wallet: ${(<Permission>permission).action} (${executions})`;
+    }
+
     return result;
   } catch (error) {
     return { error: { message: error.message, stack: error.stack } };
+  }
+}
+
+async function promptUnlock(state: ActionState) {
+  try {
+    // Keep a copy of the prompt message, we need it to finalize if user clicks "X" to close window.
+    // state.promptPermission = await promptPermission({ app: message.app, id: message.id, method: method, params: message.args.params });
+    await promptPermission(state);
+    // authorized, proceed
+  } catch (err) {
+    console.error('Permission not accepted: ', err);
   }
 }
 
@@ -196,6 +264,7 @@ function handlePromptMessage(message: ActionMessage, sender) {
 
   switch (message.permission) {
     case 'forever':
+    case 'connect':
     case 'expirable':
       // const permission = permissionService.persistPermission(permission); // .updatePermission(message.app, message.type, message.permission, message.walletId, message.accountId, message.keyId, message.key);
       permissionService.persistPermission(permission);
@@ -264,12 +333,14 @@ chrome.runtime.onSuspend.addListener(() => {
   console.log('Extension: onSuspend.');
 });
 
-async function getTabId() {
-  var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tabs[0].id;
-}
+chrome.runtime.onConnect.addListener((port) => {
+  console.log('onConnect:', port);
+});
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  // Initialize the Decentralized Web Node.
+  await dwn.load();
+
   // console.debug('onInstalled', reason);
 
   // Periodic alarm that will check if wallet should be locked.
@@ -301,8 +372,6 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm: chrome.alarms.Alarm) => {
-  // console.debug('onAlarm', alarm);
-
   if (alarm.name === 'periodic') {
     await shared.checkLockTimeout();
   } else if (alarm.name === 'index') {
@@ -310,24 +379,32 @@ chrome.alarms.onAlarm.addListener(async (alarm: chrome.alarms.Alarm) => {
   }
 });
 
-// chrome.runtime.onMessage.addListener(async (req, sender) => {
-//   let { prompt } = req;
-
-//   if (prompt) {
-//     console.log('handlePromptMessage');
-//     // return handlePromptMessage(req, sender);
-//   } else {
-//     console.log('handleContentScriptMessage');
-//     // return handleContentScriptMessage(req);
-//   }
-// });
-
-// chrome.runtime.onMessage.addListener(async (message: Message, sender, sendResponse) => {
-
-// });
-
-// let store = new NetworkStatusStore();
 let networkWatcherRef;
+
+const updateNetworkStatus = async () => {
+  // We don't have the Angular environment information available in the service worker,
+  // so we'll default to the default blockcore accounts, which should include those that
+  // are default on CoinVault.
+  await networkManager.updateNetworkStatus('blockcore');
+
+  chrome.runtime.sendMessage(
+    {
+      type: 'network-updated',
+      data: { source: 'network-status-watcher' },
+      ext: 'blockcore',
+      source: 'background',
+      target: 'tabs',
+      host: location.host,
+    },
+    function (response) {
+      // console.log('Extension:sendMessage:response:indexed:', response);
+    }
+  );
+
+  // Whenever the network status has updated, also trigger indexer.
+  // 2022-02-12: We don't need to force indexer it, it just adds too many extra calls to indexing.
+  // await executeIndexer();
+};
 
 const networkStatusWatcher = async () => {
   // const manifest = chrome.runtime.getManifest();
@@ -342,27 +419,7 @@ const networkStatusWatcher = async () => {
   }
 
   var interval = async () => {
-    // We don't have the Angular environment information available in the service worker,
-    // so we'll default to the default blockcore accounts, which should include those that
-    // are default on CoinVault.
-    await networkManager.updateNetworkStatus('blockcore');
-
-    chrome.runtime.sendMessage(
-      {
-        type: 'network-updated',
-        data: { source: 'network-status-watcher' },
-        ext: 'blockcore',
-        source: 'background',
-        target: 'tabs',
-        host: location.host,
-      },
-      function (response) {
-        // console.log('Extension:sendMessage:response:indexed:', response);
-      }
-    );
-
-    // Whenever the network status has updated, also trigger indexer.
-    await executeIndexer();
+    await updateNetworkStatus();
 
     // Continue running the watcher if it has not been cancelled.
     networkWatcherRef = globalThis.setTimeout(interval, networkUpdateInterval);
@@ -436,6 +493,32 @@ const runIndexer = async () => {
 
   // Reset the manager after full indexer run.
   manager = null;
+};
+
+const getDwnData = async (msg: ActionMessage | any) => {
+  const did = msg.data.did;
+  console.log('Get data for DID: ', did);
+  console.log(msg);
+
+  // const didKey = await DidKeyResolver.generate(); // generate a did:key DID
+  // const signatureMaterial = Jws.createSignatureInput(didKey);
+  // // const data = randomBytes(32); // in node.js
+  // // or in web
+  // const data = Uint8Array.from(msg.data.data);
+
+  // const query = await RecordsWrite.create({
+  //   data,
+  //   dataFormat: 'application/json',
+  //   published: true,
+  //   protocol: 'yeeter',
+  //   schema: 'yeeter/post',
+  //   authorizationSignatureInput: signatureMaterial,
+  // });
+
+  // const dataStream = DataStream.fromBytes(data);
+  // const result = await dwn.dwn.processMessage(didKey.did, query.toJSON(), dataStream);
+  // console.log(result);
+  // dwn.dwn.processMessage('', msg, data);
 };
 
 const runWatcher = async () => {

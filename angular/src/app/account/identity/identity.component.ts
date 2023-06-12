@@ -1,19 +1,24 @@
-import { Component, Inject, HostBinding, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AccountStateStore, bytesToBase64Url, generateCid, getDagCid, Identity, Jws } from 'src/shared';
-import { CommunicationService, CryptoService, SettingsService, UIState, WalletManager } from 'src/app/services';
+import { AccountStateStore, bytesToBase64Url, DecentralizedWebNode, generateCid, getDagCid, Identity, Jws, MessageService } from 'src/shared';
+import { CryptoUtility, SettingsService, UIState, WalletManager } from 'src/app/services';
 import { copyToClipboard } from 'src/app/shared/utilities';
 import { Network } from '../../../shared/networks';
 import { IdentityService } from 'src/app/services/identity.service';
-import { BlockcoreIdentity, BlockcoreIdentityTools } from 'src/shared/identity';
+import { BlockcoreIdentity, BlockcoreIdentityTools } from '@blockcore/identity';
 import { TranslateService } from '@ngx-translate/core';
-// import { v4 as uuidv4 } from 'uuid';
 const { v4: uuidv4 } = require('uuid');
-// import { base64url } from 'multiformats/bases/base64';
-import { createJWT, ES256KSigner } from 'did-jwt';
-import { calculateJwkThumbprintUri, base64url } from 'jose';
+import { ES256KSigner } from 'did-jwt';
+import { base64url } from 'jose';
+import { IdentityResolverService } from 'src/app/services/identity-resolver.service';
+import { DIDDocument } from 'did-resolver';
+import { BlockcoreDns } from '@blockcore/dns';
+import { MatDialog } from '@angular/material/dialog';
+import { PasswordDialog } from 'src/app/shared/password-dialog/password-dialog';
+import * as secp from '@noble/secp256k1';
+import * as QRCode from 'qrcode';
+import { SigningUtilities } from 'src/shared/identity/signing-utilities';
 
 @Component({
   selector: 'app-identity',
@@ -27,18 +32,16 @@ export class IdentityComponent implements OnInit, OnDestroy {
   unlockPassword = '';
   alarmName = 'refresh';
   wallet: any;
+  published: boolean;
   account!: any;
   previousIndex!: number;
   identity: Identity | undefined;
   identifier: string;
+  identifierWithoutPrefix: string;
   readableId: string;
-  readableId2: string;
-  readableId3: string;
-  readableId4: string;
-  readableId5: string;
-  readableId6: string;
-  readableId7: string;
   network: Network;
+  isDid = true;
+  wellKnownDomain = 'https://';
   verifiableDataRegistryUrl = '';
   prefix = '';
   profile = {
@@ -46,6 +49,17 @@ export class IdentityComponent implements OnInit, OnDestroy {
     email: '',
     website: '',
   };
+  privateKey = '';
+  verifiedWalletPassword?: boolean;
+  qrCodePublicKey: string;
+  qrCodePrivateKey: string;
+  cryptoUtility: CryptoUtility;
+  conversionKey: string;
+  convertedKey: string;
+  invalidConversion: boolean;
+  showConversionOptions = false;
+  conversionKeyType = 'npub';
+  utility = new SigningUtilities();
 
   get identityUrl(): string {
     if (!this.identity?.published) {
@@ -56,24 +70,22 @@ export class IdentityComponent implements OnInit, OnDestroy {
   }
 
   constructor(
+    public dwn: DecentralizedWebNode,
     public uiState: UIState,
     public walletManager: WalletManager,
     private snackBar: MatSnackBar,
-    private crypto: CryptoService,
-    private router: Router,
-    private communication: CommunicationService,
+    private resolver: IdentityResolverService,
     private activatedRoute: ActivatedRoute,
     private accountStateStore: AccountStateStore,
     private settings: SettingsService,
     private identityService: IdentityService,
-    private cd: ChangeDetectorRef,
-    public translate: TranslateService
+    public translate: TranslateService,
+    public dialog: MatDialog,
+    private message: MessageService
   ) {
     this.uiState.showBackButton = true;
 
-    // if (!this.walletManager.hasAccounts) {
-    //     this.router.navigateByUrl('/account/create');
-    // }
+    this.cryptoUtility = new CryptoUtility();
 
     this.activatedRoute.paramMap.subscribe(async (params) => {
       const accountIdentifier: any = params.get('index');
@@ -84,54 +96,135 @@ export class IdentityComponent implements OnInit, OnDestroy {
 
       await this.walletManager.setActiveAccount(accountIdentifier);
 
-      // If we are currently viewing an account and the user changes, we'll refresh this view.
-      // if (this.previousIndex != data.index) {
-      //   this.router.navigate(['account', 'view', data.index]);
-      // }
-
-      // console.log('PARAMS:', params);
-      // const index: any = params.get('index');
-      // // const index = data.index;
-
-      // console.log('Index to view:', index);
-
-      // // if (!this.uiState.activeWallet) {
-      // //   return;
-      // // }
-
-      // this.manager.setActiveAccountId(index);
-      this.uiState.title = (await this.translate.get('Account.Account').toPromise()) + ': ' + this.walletManager.activeAccount?.name;
+      const accountTranslate = await this.translate.get('Account.Account').toPromise();
+      this.uiState.title = accountTranslate + ': ' + this.walletManager.activeAccount?.name;
 
       this.network = this.walletManager.getNetwork(this.walletManager.activeAccount.networkType);
-
       const accountState = this.accountStateStore.get(this.walletManager.activeAccount.identifier);
 
       // The very first receive address is the actual identity of the account.
-      const address = accountState.receive[0];
+      let address = accountState.receive[0];
 
-      this.identifier = `${this.network.symbol}:${address.address}`;
-      this.readableId = `${this.network.symbol}:${address.address.substring(0, 4)}...${address.address.substring(address.address.length - 4)}`;
+      const tools = new BlockcoreIdentityTools();
+      const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
 
-      // this.uiState.persisted.activeAccountIndex = Number(index);
+      if (!this.walletManager.activeAccount.prv) {
+        const verificationMethod = tools.getVerificationMethod(identityNode.publicKey, 0, this.network.symbol);
+        const identity = new BlockcoreIdentity(verificationMethod);
+        this.identifier = identity.did;
+        this.readableId = identity.short;
+      }
 
-      // Persist when changing accounts.
-      // this.uiState.save();
+      if (this.network.bech32 === 'npub') {
+        this.isDid = false;
+        this.identifier = this.utility.getNostrIdentifier(address.address);
 
-      // this.previousIndex = index;
+        // For backwards compatibility, we might need to derive the address again and update the store.
+        // TODO: Delete this in the future!
+        // if (!address.address.startsWith('npub')) {
+        //   accountState.receive[0] = this.walletManager.getReceiveAddressByIndex(this.walletManager.activeAccount, 0);
+        //   accountState.change[0] = this.walletManager.getReceiveAddressByIndex(this.walletManager.activeAccount, 0);
+        //   await this.accountStateStore.save();
+        //   address = accountState.receive[0];
+        // }
 
-      // var did = this.walletManager.activeAccount?.identifier;
-      // this.identity = this.uiState.store.identities.find(i => i.id == did);
+        // this.identifier = address.address;
+        // this.identifierWithoutPrefix = this.identifier.substring(this.identifier.lastIndexOf(':') + 1);
+        // this.readableId = identity.short.substring(identity.short.lastIndexOf(':') + 1);
 
-      // let service = this.identity?.services.find((s) => s.type == 'VerifiableDataRegistry');
+        this.qrCodePublicKey = await QRCode.toDataURL('nostr:' + this.identifier, {
+          errorCorrectionLevel: 'L',
+          margin: 2,
+          scale: 5,
+        });
+      }
+    });
+  }
 
-      // if (service) {
-      //   this.verifiableDataRegistryUrl = service.serviceEndpoint;
-      // }
+  convertKey() {
+    this.invalidConversion = false;
+
+    if (!this.conversionKey) {
+      this.convertedKey = null;
+      this.showConversionOptions = false;
+      return;
+    }
+
+    try {
+      if (this.conversionKey.startsWith('npub') || this.conversionKey.startsWith('nsec')) {
+        this.showConversionOptions = false;
+        this.convertedKey = this.cryptoUtility.arrayToHex(this.cryptoUtility.convertFromBech32(this.conversionKey));
+      } else {
+        this.showConversionOptions = true;
+        const key = this.cryptoUtility.hexToArray(this.conversionKey);
+        this.convertedKey = this.cryptoUtility.convertToBech32(key, this.conversionKeyType);
+      }
+    } catch (err) {
+      this.invalidConversion = true;
+      this.convertedKey = null;
+      this.showConversionOptions = false;
+    }
+  }
+
+  resetPrivateKey() {
+    this.privateKey = null;
+    this.qrCodePrivateKey = null;
+    this.verifiedWalletPassword = null;
+  }
+
+  async exportPrivateKey() {
+    this.verifiedWalletPassword = null;
+    this.privateKey = null;
+    const dialogRef = this.dialog.open(PasswordDialog, {
+      data: { password: null },
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result === null || result === undefined || result === '') {
+        return;
+      }
+
+      this.verifiedWalletPassword = await this.walletManager.verifyWalletPassword(this.walletManager.activeWalletId, result);
+
+      if (this.verifiedWalletPassword === true) {
+        const network = this.identityService.getNetwork(this.walletManager.activeAccount.networkType);
+        const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
+
+        this.privateKey = this.cryptoUtility.convertToBech32(identityNode.privateKey, 'nsec');
+        console.log(secp.utils.bytesToHex(identityNode.privateKey));
+        //this.privateKey = secp.utils.bytesToHex(identityNode.privateKey);
+
+        this.qrCodePrivateKey = await QRCode.toDataURL('nostr:' + this.privateKey, {
+          errorCorrectionLevel: 'L',
+          margin: 2,
+          scale: 5,
+        });
+      }
+    });
+  }
+
+  async copyPrivateKey() {
+    copyToClipboard(this.privateKey);
+
+    this.snackBar.open(await this.translate.get('Account.PrivateKeyCopiedToClipboard').toPromise(), await this.translate.get('Account.PrivateKeyCopiedToClipboardAction').toPromise(), {
+      duration: 2500,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
     });
   }
 
   async copy() {
     copyToClipboard(this.identifier);
+
+    this.snackBar.open(await this.translate.get('Account.IdentifierCopiedToClipboard').toPromise(), await this.translate.get('Account.IdentifierCopiedToClipboardAction').toPromise(), {
+      duration: 2500,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
+  }
+
+  async copyConvertedKey() {
+    copyToClipboard(this.convertedKey);
 
     this.snackBar.open(await this.translate.get('Account.IdentifierCopiedToClipboard').toPromise(), await this.translate.get('Account.IdentifierCopiedToClipboardAction').toPromise(), {
       duration: 2500,
@@ -192,24 +285,55 @@ export class IdentityComponent implements OnInit, OnDestroy {
     // this.manager.updateIdentity(this.identity);
   }
 
-  publish() {
-    if (this.identity) {
-      // this.manager.publishIdentity(this.identity);
+  private getRandomInt(max: number) {
+    return Math.floor(Math.random() * max);
+  }
+
+  async publish() {
+    const jws = await this.generateOperation(0);
+
+    const dns = new BlockcoreDns();
+    await dns.load(undefined, 'Identity');
+
+    let serviceUrl = 'https://id.blockcore.net'; // Fallback
+    const services = dns.getServices().filter((s) => s.online);
+
+    if (services.length > 0) {
+      const randomIndex = this.getRandomInt(services.length);
+      serviceUrl = 'https://' + services[randomIndex].domain;
     }
+
+    console.log(serviceUrl);
+    console.log(jws);
+
+    const rawResponse = await fetch(serviceUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jws,
+    });
+
+    const content = await rawResponse.json();
+    console.log(content);
+
+    this.published = true;
   }
 
   async copyDWNRequest() {
     // const didDocument = await this.generateDIDDocument();
-    const didDocument = await this.generateDIDDocument();
+
+    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
+    const didDocument = await this.generateDIDDocument(identityNode.publicKey);
 
     const tools = new BlockcoreIdentityTools();
     // const keyPair = tools.generateKeyPair();
 
-    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
     const privateKey = identityNode.privateKey;
 
     // Does the same thing, verificationMethod doesn't do private key... this is just prototype-code anyway :-P
-    const { privateJwk, publicJwk } = tools.getKeyPair(privateKey, 0, this.network.symbol);
+    const { privateJwk, publicJwk } = tools.convertPrivateKeyToJsonWebKeyPair(privateKey);
     const verificationMethod = tools.getVerificationMethod(privateKey, 0, this.network.symbol);
 
     // const keyId = verificationMethod.id;
@@ -259,52 +383,13 @@ export class IdentityComponent implements OnInit, OnDestroy {
 
     const encodedData = bytesToBase64Url(options.data);
 
-    // const publicKey = secp.schnorr.getPublicKey(privateKey);
-    // const identifier = this.crypto.getIdentifier(publicKey);
-    // const did = `did:is:${identifier}`;
-
-    // const address0 = this.crypto.getAddress(addressNode);
-    // var signer = await this.crypto.getSigner(addressNode);
     var signer = ES256KSigner(privateKey);
-
-    // const authorization = await createJWT(
-    //   {
-    //     aud: didDocument.controller,
-    //     exp: 1957463421,
-    //     name: 'Blockcore Developer',
-    //   },
-    //   { issuer: didDocument.controller, signer },
-    //   { alg: 'ES256K' }
-    // );
-
-    // const authorization2 = await createJWT(
-    //   { descriptor },
-    //   { issuer: didDocument.controller, signer },
-    //   { alg: 'ES256K' }
-    // );
 
     const authorization = await Jws.sign({ descriptor }, options.signatureInput);
     const message = { descriptor, authorization, encodedData };
     console.log('MESSAGE:');
     console.log(message);
     console.log(JSON.stringify(message));
-
-    //const collectionsWrite = await CollectionsWrite.create(options);
-
-    // const message = collectionsWrite.toObject() as CollectionsWriteMessage;
-
-    // expect(message.authorization).to.exist;
-    // expect(message.encodedData).to.equal(base64url.baseEncode(options.data));
-    // expect(message.descriptor.dataFormat).to.equal(options.dataFormat);
-    // expect(message.descriptor.dateCreated).to.equal(options.dateCreated);
-    // expect(message.descriptor.recordId).to.equal(options.recordId);
-
-    // const resolverStub = TestStubGenerator.createDidResolverStub(requesterDid, keyId, publicJwk);
-    // const messageStoreStub = sinon.createStubInstance(MessageStoreLevel);
-
-    // const { author } = await collectionsWrite.verifyAuth(resolverStub, messageStoreStub);
-
-    // expect(author).to.equal(requesterDid);
 
     const bytes = new TextEncoder().encode('Hello World');
     const base64UrlString = base64url.encode(bytes);
@@ -349,16 +434,17 @@ export class IdentityComponent implements OnInit, OnDestroy {
 
   async copyDWNQueryRequest() {
     // const didDocument = await this.generateDIDDocument();
-    const didDocument = await this.generateDIDDocument();
+
+    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
+    const didDocument = await this.generateDIDDocument(identityNode.publicKey);
 
     const tools = new BlockcoreIdentityTools();
     // const keyPair = tools.generateKeyPair();
 
-    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
     const privateKey = identityNode.privateKey;
 
     // Does the same thing, verificationMethod doesn't do private key... this is just prototype-code anyway :-P
-    const { privateJwk, publicJwk } = tools.getKeyPair(privateKey, 0, this.network.symbol);
+    const { privateJwk, publicJwk } = tools.convertPrivateKeyToJsonWebKeyPair(privateKey);
     const verificationMethod = tools.getVerificationMethod(privateKey, 0, this.network.symbol);
 
     // const keyId = verificationMethod.id;
@@ -398,7 +484,7 @@ export class IdentityComponent implements OnInit, OnDestroy {
       method: 'CollectionsQuery',
 
       filter: {
-        recipient: options.target
+        recipient: options.target,
       },
 
       nonce: uuidv4(),
@@ -418,29 +504,7 @@ export class IdentityComponent implements OnInit, OnDestroy {
 
     const encodedData = bytesToBase64Url(options.data);
 
-    // const publicKey = secp.schnorr.getPublicKey(privateKey);
-    // const identifier = this.crypto.getIdentifier(publicKey);
-    // const did = `did:is:${identifier}`;
-
-    // const address0 = this.crypto.getAddress(addressNode);
-    // var signer = await this.crypto.getSigner(addressNode);
     var signer = ES256KSigner(privateKey);
-
-    // const authorization = await createJWT(
-    //   {
-    //     aud: didDocument.controller,
-    //     exp: 1957463421,
-    //     name: 'Blockcore Developer',
-    //   },
-    //   { issuer: didDocument.controller, signer },
-    //   { alg: 'ES256K' }
-    // );
-
-    // const authorization2 = await createJWT(
-    //   { descriptor },
-    //   { issuer: didDocument.controller, signer },
-    //   { alg: 'ES256K' }
-    // );
 
     const authorization = await Jws.sign({ descriptor }, options.signatureInput);
     const message = { descriptor, authorization };
@@ -506,25 +570,65 @@ export class IdentityComponent implements OnInit, OnDestroy {
     });
   }
 
-  async generateDIDDocument() {
+  openDid() {
+    // TODO: We need to somehow get active service URL from the resolver library.
+    const url = `https://did.is/${this.identifier}`;
+    window.open(url, '_blank');
+    // window.open(url, 'exolixPopup', 'height=820,width=600,left=200,top=200,resizable=yes,channelmode=yes,scrollbars=yes,toolbar=yes,menubar=no,location=yes,directories=no,status=yes');
+  }
+
+  async generateOperation(version: number) {
     const tools = new BlockcoreIdentityTools();
-    // const keyPair = tools.generateKeyPair();
 
     const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
-    const privateKey = identityNode.privateKey;
-    const verificationMethod = tools.getVerificationMethod(privateKey, 0, this.network.symbol);
+    const signer = tools.getSigner(identityNode.privateKey);
 
-    console.log('verificationMethod:', verificationMethod);
-
+    const verificationMethod = tools.getVerificationMethod(identityNode.publicKey, 0, this.network.symbol);
     const identity = new BlockcoreIdentity(verificationMethod);
 
-    const doc = identity.document();
-    console.log(JSON.stringify(doc));
-    return doc;
+    const didDocument = this.generateDIDDocument(identityNode.publicKey);
+    const kid = didDocument.id + '#key0';
+    const jws = await identity.sign(signer, { version: 0, iat: new Date().valueOf() / 1000, didDocument: didDocument }, kid);
+
+    return jws;
+  }
+
+  generateDIDDocument(publicKey: Uint8Array): DIDDocument {
+    const tools = new BlockcoreIdentityTools();
+
+    const verificationMethod = tools.getVerificationMethod(publicKey, 0, this.network.symbol);
+    const identity = new BlockcoreIdentity(verificationMethod);
+    const didDocument: DIDDocument = identity.document();
+    return didDocument;
+  }
+
+  async generateWellKnownConfiguration(publicKey: Uint8Array, privateKey: Uint8Array, domain: string) {
+    const tools = new BlockcoreIdentityTools();
+
+    const verificationMethod = tools.getVerificationMethod(publicKey, 0, this.network.symbol);
+    const identity = new BlockcoreIdentity(verificationMethod);
+    const issuer = tools.getIssuer(identity.did, privateKey);
+
+    const document = await identity.configuration(domain, issuer, verificationMethod.id);
+    return document;
+  }
+
+  async copyWellKnownConfiguration() {
+    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
+    const doc = await this.generateWellKnownConfiguration(identityNode.publicKey, identityNode.privateKey, this.wellKnownDomain);
+
+    copyToClipboard(JSON.stringify(doc));
+
+    this.snackBar.open('Copied to clipboard', 'Hide', {
+      duration: 2500,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 
   async copyDIDDocument() {
-    const doc = await this.generateDIDDocument();
+    const identityNode = this.identityService.getIdentityNode(this.walletManager.activeWallet, this.walletManager.activeAccount);
+    const doc = this.generateDIDDocument(identityNode.publicKey);
 
     copyToClipboard(JSON.stringify(doc));
 
@@ -548,7 +652,30 @@ export class IdentityComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    this.uiState.title = (await this.translate.get('Account.Account').toPromise()) + ': ';
+    const didResolution = await this.resolver.resolve(this.identifier);
+
+    console.log(didResolution);
+
+    if (didResolution.didDocument != null) {
+      this.published = true;
+      console.log('PUBLISHED SET TO TRUE!');
+    } else {
+      this.published = false;
+    }
+
+    const data = new Uint8Array(32);
+    window.crypto.getRandomValues(data);
+
+    // Send a message to the DWN to get all data.
+    this.message.send(this.message.createMessage('data:get', { did: this.identifier, data }, 'background'));
+
+    // if (didResolution.didResolutionMetadata.error == 'notFound') {
+    //   this.identity.published = false;
+    // } else {
+    //   this.identity.published = true;
+    // }
+
+    // console.log(didResolution);
 
     // this.sub4 = this.communication.listen('identity-published', (data: Identity) => {
     //   this.identity = data;

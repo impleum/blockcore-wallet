@@ -1,13 +1,15 @@
 import { Network } from './network';
 
+/** Network that implements NIP-06: https://github.com/nostr-protocol/nips/blob/master/06.md */
 export class NOSTR implements Network {
     id = 'NOSTR';
     name = 'Nostr';
     symbol = 'nostr:key';
     network = 1237;
     purpose = 44;
+    addressPurpose = 340;
     messagePrefix = '\x18Bitcoin Signed Message:\n';
-    bech32 = 'bc';
+    bech32 = 'npub';
     bip32 = {
         public: 0x0488b21e,
         private: 0x0488ade4,
@@ -18,4 +20,5 @@ export class NOSTR implements Network {
     testnet = false;
     smartContractSupport = false;
     type = 'identity';
+    singleAddress = true;
 }

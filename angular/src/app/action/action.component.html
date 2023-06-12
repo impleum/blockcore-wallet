@@ -1,5 +1,4 @@
 <div class="page">
-
   <mat-card>
     <mat-card-header>
       <mat-icon class="card-icon {{ verifyStatus.color }}" mat-card-avatar>{{ verifyStatus.icon }}</mat-icon>
@@ -9,35 +8,55 @@
   </mat-card>
   <br />
 
-  <mat-form-field appearance="outline" class="input-full-width">
+  <mat-form-field *ngIf="actionService.permissionLevel == 'wallet'" appearance="outline" class="input-full-width">
+    <mat-label>{{ "Action.Wallet" | translate }}</mat-label>
+
+    <mat-select (selectionChange)="onWalletChanged()" [(value)]="actionService.walletId">
+      <mat-option *ngFor="let wallet of wallets" [value]="wallet.id">{{ wallet.name }} </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field *ngIf="actionService.permissionLevel == 'key' || actionService.permissionLevel == 'account'" appearance="outline" class="input-full-width">
     <mat-label>{{ "Action.Account" | translate }}</mat-label>
 
-    <mat-select (selectionChange)="onAccountChanged()" [(value)]="action.accountId">
+    <mat-select (selectionChange)="onAccountChanged()" [(value)]="actionService.accountId">
       <mat-option *ngFor="let account of accounts" [value]="account.identifier">{{ account.name }} </mat-option>
     </mat-select>
   </mat-form-field>
 
   <br />
 
-  <mat-form-field appearance="outline" class="input-full-width">
+  <mat-form-field *ngIf="actionService.permissionLevel == 'key'" appearance="outline" class="input-full-width">
     <mat-label>{{ "Action.Key" | translate }}</mat-label>
 
-    <mat-select [disabled]="keySelectionDisabled" (selectionChange)="onKeyChanged()" [(value)]="action.keyId">
+    <mat-select [disabled]="keySelectionDisabled" (selectionChange)="onKeyChanged()" [(value)]="actionService.keyId">
       <mat-option *ngFor="let address of addresses" [value]="address.keyId">{{ address.address }} </mat-option>
     </mat-select>
   </mat-form-field>
 
   <mat-card>
     <mat-card-header>
-      <mat-icon class="card-icon" mat-card-avatar>{{ actionStatus.icon }}</mat-icon>
-      <mat-card-title>{{ actionStatus.title }}</mat-card-title>
-      <mat-card-subtitle class="no-bottom-margin"><strong>{{ actionStatus.description }}</strong></mat-card-subtitle>
+      <mat-icon class="card-icon" mat-card-avatar>{{ actionService.status.icon }}</mat-icon>
+      <mat-card-title>{{ actionService.status.title }}</mat-card-title>
+      <mat-card-subtitle class="no-bottom-margin"
+        ><strong>{{ actionService.status.description }}</strong></mat-card-subtitle
+      >
     </mat-card-header>
   </mat-card>
 
   <router-outlet></router-outlet>
-  <div>
-    <button class="action-button" mat-flat-button color="primary" (click)="action.authorize('once')">{{ "Action.AuthorizeOnce" | translate }}</button>&nbsp; <button class="action-button" mat-flat-button (click)="action.authorize('expirable')">{{ "Action.AuthorizeFor5Minutes" | translate }}</button>&nbsp; <button class="action-button" mat-flat-button (click)="action.authorize('forever')">{{ "Action.AuthorizeForever" | translate }}</button>&nbsp;
-    <button class="action-button" mat-flat-button (click)="action.authorize('no')">{{ "Action.Cancel" | translate }}</button>
+  <div *ngIf="actionService.consentType === 'connect'">
+    <button class="action-button" mat-flat-button color="primary" (click)="actionService.authorize('connect')">{{ "Action.Connect" | translate }}</button>&nbsp; &nbsp;
+    <button class="action-button" mat-flat-button (click)="actionService.authorize('no')">{{ "Action.Cancel" | translate }}</button>
+  </div>
+  <div *ngIf="actionService.consentType === 'ephemeral'">
+    <button class="action-button" mat-flat-button color="primary" (click)="actionService.authorize('once')">{{ "Action.Authorize" | translate }}</button>&nbsp; &nbsp;
+    <button class="action-button" mat-flat-button (click)="actionService.authorize('no')">{{ "Action.Cancel" | translate }}</button>
+  </div>
+  <div *ngIf="actionService.consentType === 'regular'">
+    <button class="action-button" mat-flat-button color="primary" (click)="actionService.authorize('once')">{{ "Action.AuthorizeOnce" | translate }}</button>&nbsp;
+    <button class="action-button" mat-flat-button (click)="actionService.authorize('expirable')">{{ "Action.AuthorizeFor5Minutes" | translate }}</button>&nbsp;
+    <button class="action-button" mat-flat-button (click)="actionService.authorize('forever')">{{ "Action.AuthorizeForever" | translate }}</button>&nbsp;
+    <button class="action-button" mat-flat-button (click)="actionService.authorize('no')">{{ "Action.Cancel" | translate }}</button>
   </div>
 </div>

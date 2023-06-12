@@ -74,7 +74,7 @@ import { HandlerComponent } from './settings/handler/handler.component';
 import { ActionStratisIdentityComponent } from './action/sid/sid.component';
 import { ActionNostrIdentityComponent } from './action/nostr/nostr.component';
 import { AboutComponent } from './settings/about/about.component';
-import { AccountHistoryStore, AddressStore, NetworkStatusStore, TransactionStore, UIStore, WalletStore, AddressIndexedStore, EventBus, NetworkLoader, TransactionMetadataStore } from 'src/shared';
+import { AccountHistoryStore, AddressStore, NetworkStatusStore, TransactionStore, UIStore, WalletStore, AddressIndexedStore, EventBus, NetworkLoader, TransactionMetadataStore, DecentralizedWebNode } from 'src/shared';
 import { ActionStore } from 'src/shared/store/action-store';
 import { SettingStore } from 'src/shared/store/setting-store';
 import { AddressWatchStore } from 'src/shared/store/address-watch-store';
@@ -117,6 +117,20 @@ import { NameserverService } from 'src/shared/nameserver.service';
 import { LanguageSelectorComponent } from './shared/language-selector/language-selector.component';
 import { BidiModule } from '@angular/cdk/bidi';
 import { DebuggerComponent } from './settings/debugger/debugger.component';
+import { SignComponent } from './sign/sign.component';
+import { ActionDidRequestComponent } from './action/did-request/did-request.component';
+import { ActionVcRequestComponent } from './action/vc-request/vc-request.component';
+import { ActionWalletsComponent } from './action/wallets/wallets.component';
+import { ActionNostrPublicKeyComponent } from './action/nostr.publickey/nostr.publickey.component';
+import { ActionNostrSignEventComponent } from './action/nostr.signevent/nostr.signevent.component';
+import { ActionNostrEncryptComponent } from './action/nostr.encrypt/nostr.encrypt.component';
+import { ActionNostrDecryptComponent } from './action/nostr.decrypt/nostr.decrypt.component';
+import { PasswordDialog } from './shared/password-dialog/password-dialog';
+import { PermissionExecutionStore } from 'src/shared/store/permission-execution-store';
+import { ActionTransactionSendComponent } from './action/transaction.send/transaction.send.component';
+import { SendConfirmationDialog } from './action/transaction.send/send-confirmation-dialog/send-confirmation-dialog';
+import { ActionWalletUnlockComponent } from './action/wallet.unlock/wallet.unlock.component';
+import { ActionSwapsSendComponent } from './action/swaps.send/swaps.send.component';
 
 // required for AOT compilation
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
@@ -188,7 +202,20 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     ActionVaultSetupComponent,
     PaymentComponent,
     LanguageSelectorComponent,
-    DebuggerComponent
+    DebuggerComponent,
+    SignComponent,
+    ActionDidRequestComponent,
+    ActionVcRequestComponent,
+    ActionWalletsComponent,
+    ActionNostrPublicKeyComponent,
+    ActionNostrSignEventComponent,
+    ActionNostrEncryptComponent,
+    ActionNostrDecryptComponent,
+    PasswordDialog,
+    ActionTransactionSendComponent,
+    SendConfirmationDialog,
+    ActionWalletUnlockComponent,
+    ActionSwapsSendComponent,
   ],
   imports: [
     BrowserModule,
@@ -274,6 +301,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     AddressIndexedStore,
     AccountStateStore,
     PermissionStore,
+    PermissionExecutionStore,
     AppUpdateService,
     ContactStore,
     StandardTokenStore,
@@ -283,6 +311,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     CryptoUtility,
     PaymentRequest,
     NameserverService,
+    DecentralizedWebNode,
     EventBus,
     {
       provide: MessageService,

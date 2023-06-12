@@ -3,7 +3,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { CameraDevice } from 'html5-qrcode/esm/core';
+import { CameraDevice } from 'html5-qrcode/esm/camera/core';
 import { UIState } from 'src/app/services';
 
 export interface DialogData {
@@ -100,11 +100,11 @@ export class QrScanDialog implements OnInit {
 
   async changeCamera() {
     // Perform an request cameras every time user clicks the change camera button, if there are no cameras.
-    if (!this.cameras && this.cameras.length == 0) {
+    if (!this.cameras || this.cameras.length == 0) {
       await this.requestCameras();
     }
 
-    if (!this.cameras && this.cameras.length == 0) {
+    if (!this.cameras || this.cameras.length == 0) {
       return;
     }
 

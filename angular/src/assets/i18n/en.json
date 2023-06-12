@@ -8,6 +8,8 @@
   "he": "Hebrew",
   "ru": "Русский",
   "App": {
+    "Hide": "Hide",
+    "ConvertKey": "Convert Key",
     "AddAccount": "Add Account",
     "ChooseWallet": "Choose Wallet",
     "CreateWallet": "Create Wallet",
@@ -35,21 +37,18 @@
   },
   "Dashboard": {
     "Accounts": "Accounts",
-    "Actions": "Actions",
     "Vaults": "Vaults",
     "Collectibles": "Collectibles",
     "Inbox": "Inbox",
-    "Tools": "Tools",
     "AddressBook": "Address Book",
     "AddAccount": "Add Account",
     "AddWallet": "Add Wallet",
     "Exchange": "Exchange (buy/sell)",
     "ScanPayment": "Scan Payment",
-    "CreateAccount": "Create Account",
-    "CreateWallet": "Create Wallet",
-    "NoCollectablesFound": "No collectables found",
-    "GoToMarketplace": "Go to marketplace",
-    "ZeroAccounts": "Your wallet has zero accounts."
+    "NoCollectablesFound": "No collectables found.",
+    "GoToMarketplace": "Go to marketplace.",
+    "ZeroAccounts": "Your wallet has zero accounts.",
+    "SignVerify": "Sign & Verify"
   },
   "Settings": {
     "Settings": "Settings",
@@ -57,7 +56,7 @@
     "DisplayLanguage": "Display Language",
     "DisplayLanguageHint": "Change the display language for the app.",
     "ChooseMode": "Choose your mode",
-    "ChooseModeHint": "You must save the settings for mode and accent color to be persisted.",
+    "ChooseModeHint": "You must save the settings for mode to be persisted.",
     "Dark": "Dark",
     "Light": "Light",
     "OtherActions": "Other Actions",
@@ -120,7 +119,10 @@
     "ShowSecretRecoveryPhraseDescriptionP1": "If someone has your secret recovery phrase, they have full control over your wallet.",
     "VerifyPassword": "Verify password",
     "Close": "Close",
-    "Show": "Show"
+    "Show": "Show",
+    "RequirePasswordForSending": "Require Password For Sending",
+    "Yes": "Yes",
+    "No": "No"
   },
   "Wallet": {
     "CreateNewWallet": "Create New Wallet",
@@ -240,6 +242,8 @@
     "DIDDocumentCopiedToClipboardAction": "Hide",
     "IdentifierCopiedToClipboard": "Identifier copied to clipboard",
     "IdentifierCopiedToClipboardAction": "Hide",
+    "PrivateKeyCopiedToClipboard": "Private Key copied to clipboard",
+    "PrivateKeyCopiedToClipboardAction": "Hide",
     "PaymentRequest": "Payment Request",
     "Message": "Message",
     "Address": "Address",
@@ -283,7 +287,7 @@
     "InteractionWithContract": "Interaction with contract",
     "StandardTokensNotice": "Notice: The token API does not support decimals in the current release. Values are shown without decimals in this version.",
     "Login": "Login",
-    "PasteTheLoginUrl": "Paste the login url",
+    "PasteTheLoginURL": "Paste the login URL",
     "WalletsPersistedState": "Wallets Persisted State",
     "WalletsPersistedStateMessage": "Contains your encrypted secret recovery phrase. Do NOT share this with anyone!",
     "NetworkStatus": "Network Status",
@@ -340,7 +344,7 @@
     "Error": "Error",
     "SendingPayment": "Sending Payment...",
     "PaymentSent": "Payment sent",
-    "TransactionId": "TXID",
+    "TransactionId": "Transaction ID",
     "OK": "OK",
     "PaymentError": "Payment error",
     "Swap": "Swap",
@@ -348,7 +352,6 @@
     "SelectSidechain": "Select a sidechain",
     "FederationSwapAddress": "Federation Swap Address",
     "SidechainAddress": "Sidechain address",
-    "SwapCardMessage": "Additional chain swap fee is taken from the amount entered, which is a fixed amountof '0.001'. If you want the receiver to get '1', enter amount '1.001'.",
     "SwapAmountMin": "Amount must be more than 1.",
     "FederationAddress": "Federation Address",
     "TargetAddressOn": "Target address on",
@@ -363,16 +366,29 @@
     "BlockHash": "Block Hash",
     "BlockHeight": "Block Height",
     "Inputs": "Inputs",
-    "Outputs": "Outputs"
+    "Outputs": "Outputs",
+    "ExportPrivateKey": "Export Private Key"
   },
   "Action": {
+    "nostr.publickey": "Nostr Identifier",
+    "nostr.signevent": "Nostr Sign Event",
+    "nostr.encrypt": "Nostr Encrypt",
+    "nostr.decrypt": "Nostr Decrypt",
+    "transaction.send": "Send Transaction",
+    "Connect": "Connect",
+    "wallets": "Connect",
+    "Authorize": "Authorize",
+    "did.request": "DID Request",
+    "vc.request": "VC Request",
     "vaultSetup": "Vault Setup",
     "signMessage": "Sign Message",
     "IdentityDID": "Identity (DID)",
     "SigningAccount": "Signing account",
     "DerivationPath": "Derivation path",
-    "SigningAccountMessage": "You attest with your select account to the following content",
+    "SigningAccountMessage": "You attest with your selected account to the following content",
     "SigningContentLabel": "Signing content",
+    "EncryptionContentLabel": "Encryption content",
+    "DecryptionContentLabel": "Descryption content",
     "SignAndClose": "Sign and close",
     "ExitAction": "Exit Action",
     "ActionIdentity": "Action: Identity",
@@ -383,7 +399,9 @@
     "Account": "Account",
     "Expiry": "Expiry",
     "CallbackURL": "Callback URL",
-    "AttestContentDescription": "You attest with your select account to the following content",
+    "EncryptContentDescription": "You encrypt with your selected account to the following content",
+    "DecryptContentDescription": "You decrypt with your selected account to the following content",
+    "AttestContentDescription": "You attest with your selected account to the following content",
     "SuccessfullyLoggedIn": "You have successfully logged in. You can now close this window",
     "FailedToAuthenticate": "Failed to authenticate.",
     "SignAndCallback": "Sign & Callback",
@@ -399,7 +417,7 @@
     "AuthorizeOnce": "Authorize once",
     "AuthorizeFor5Minutes": "Authorize for 5 minutes",
     "AuthorizeForever": "Authorize forever",
-    "Cancel":"Cancel"
+    "Cancel": "Cancel"
   },
   "Collectables": {
     "PurchasePrice": "purchase price",
@@ -421,6 +439,17 @@
     "Partners": "Partners",
     "PartnersDescription": "Using our links and affiliated partners, helps support the continued development of this wallet."
   },
+  "SignVerify": {
+    "MessageToSign": "Message to sign",
+    "Signature": "Signature",
+    "Sign": "Sign",
+    "SignatureVerified": "Signature verified",
+    "SignatureVerifiedDescription": "This means that the message has been verified to be signed by the owner of the address/identity specified.",
+    "Verify": "Verify",
+    "FailedSignatureVerification": "Failed signature verification",
+    "FailedSignatureVerificationDescription": "This means that the message was not signed by the owner of the address/identity specified.",
+    "ClearAll": "Clear All"
+  },
   "english": "English",
   "chinese_simplified": "Chinese (Simplified)",
   "chinese_traditional": "Chinese (Traditional)",
@@ -430,5 +459,6 @@
   "japanese": "Japanese",
   "korean": "Korean",
   "portuguese": "Portuguese",
-  "spanish": "Spanish"
+  "spanish": "Spanish",
+  "russian": "Russian"
 }
